@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:http="http://www.springframework.org/schema/http"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.0.xsd">
+
+
+	<http auto-config="true" use-expressions="false">
+			<headers>
+		         <frame-options disabled="true"></frame-options>
+		    </headers>
+	        <intercept-url pattern="/admin/**" access="ROLE_ADMIN,ROLE_SUPPLIER,ROLE_PURCHASE,ROLE_ADMIN_PURCHASE,ROLE_PURCHASE_IMPORT,ROLE_CXP,ROLE_CXP_IMPORT,ROLE_MANAGER,ROLE_RECEIPT,ROLE_SUPPLIER_OPEN,ROLE_IT,ROLE_APPROVER3,ROLE_TAX,ROLE_WNS,ROLE_RH,ROLE_LEGAL,ROLE_REPSE,ROLE_3RDPARTY" />
+	        <intercept-url pattern="/supplier/**" access="ROLE_ADMIN,ROLE_SUPPLIER,ROLE_PURCHASE,ROLE_ADMIN_PURCHASE,ROLE_PURCHASE_IMPORT,ROLE_CXP,ROLE_CXP_IMPORT,ROLE_MANAGER,ROLE_RECEIPT,ROLE_SUPPLIER_OPEN,ROLE_IT,ROLE_APPROVER3,ROLE_TAX,ROLE_WNS,ROLE_RH,ROLE_LEGAL,ROLE_REPSE,ROLE_3RDPARTY" />
+	        <intercept-url pattern="/purchasing/**" access="ROLE_ADMIN,ROLE_SUPPLIER,ROLE_PURCHASE,ROLE_ADMIN_PURCHASE,ROLE_PURCHASE_IMPORT,ROLE_CXP,ROLE_CXP_IMPORT,ROLE_MANAGER,ROLE_RECEIPT,ROLE_SUPPLIER_OPEN,ROLE_IT,ROLE_APPROVER3,ROLE_TAX,ROLE_WNS,ROLE_RH,ROLE_LEGAL,ROLE_REPSE,ROLE_3RDPARTY" />
+	        <intercept-url pattern="/accpay/**" access="ROLE_ADMIN,ROLE_SUPPLIER,ROLE_PURCHASE,ROLE_ADMIN_PURCHASE,ROLE_PURCHASE_IMPORT,ROLE_CXP,ROLE_CXP_IMPORT,ROLE_MANAGER,ROLE_RECEIPT,ROLE_SUPPLIER_OPEN,ROLE_IT,ROLE_APPROVER3,ROLE_TAX,ROLE_WNS,ROLE_RH,ROLE_LEGAL,ROLE_REPSE,ROLE_3RDPARTY" />
+	        <intercept-url pattern="/receipt/**" access="ROLE_ADMIN,ROLE_SUPPLIER,ROLE_PURCHASE,ROLE_ADMIN_PURCHASE,ROLE_PURCHASE_IMPORT,ROLE_CXP,ROLE_CXP_IMPORT,ROLE_MANAGER,ROLE_RECEIPT,ROLE_SUPPLIER_OPEN,ROLE_IT,ROLE_APPROVER3,ROLE_TAX,ROLE_WNS,ROLE_RH,ROLE_LEGAL,ROLE_REPSE,ROLE_3RDPARTY" />
+	        <intercept-url pattern="/index.jsp" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+	        <intercept-url pattern="/login" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+	        <intercept-url pattern="/resources/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+	        <intercept-url pattern="/newRegister/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+	        <intercept-url pattern="/isAlive/**" access="IS_AUTHENTICATED_ANONYMOUSLY,ROLE_ADMIN,ROLE_SUPPLIER,ROLE_PURCHASE,ROLE_ADMIN_PURCHASE,ROLE_PURCHASE_IMPORT,ROLE_CXP,ROLE_CXP_IMPORT,ROLE_MANAGER,ROLE_RECEIPT,ROLE_SUPPLIER_OPEN,ROLE_IT,ROLE_APPROVER3,ROLE_TAX,ROLE_WNS,ROLE_RH,ROLE_LEGAL,ROLE_REPSE,ROLE_3RDPARTY" />
+	        <intercept-url pattern="/public/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+	        
+	        <form-login default-target-url="/home.action" 
+	                    login-page="/login" 
+	                    authentication-failure-url="/login?error=true" />
+	        <logout logout-success-url="/login" delete-cookies="JSESSIONID" logout-url="/logout" />
+		    <csrf disabled="true"/>
+		    
+		    <session-management>
+		        <concurrency-control max-sessions="1" />
+		    </session-management>
+		    
+		     <custom-filter ref="captchaCaptureFilter" before="FORM_LOGIN_FILTER"/>
+	    </http>
+	    
+	<beans:bean id="customAuthenticationProvider" class="com.eurest.supplier.security.CustomAuthenticationProvider"/>
+	<beans:bean id="captchaCaptureFilter" class="com.eurest.supplier.security.CaptchaCaptureFilter"/>
+	
+    <authentication-manager>
+        <authentication-provider
+          ref="customAuthenticationProvider" />
+    </authentication-manager>
+
+
+</beans:beans>
