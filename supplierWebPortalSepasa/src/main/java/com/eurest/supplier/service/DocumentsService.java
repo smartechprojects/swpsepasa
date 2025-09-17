@@ -1351,12 +1351,12 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					String decodedPass = new String(decodedBytes);
 					
 					
-					String credentials = "Usuario: " + s.getUserName() + "<br />Contraseña: " + decodedPass + "<br />url: " + AppConstants.EMAIL_PORTAL_LINK ;
+					String credentials = "Usuario: " + s.getUserName() + "<br />ContraseÃ±a: " + decodedPass + "<br />url: " + AppConstants.EMAIL_PORTAL_LINK ;
 					EmailServiceAsync emailAsyncSup = new EmailServiceAsync();
 					emailAsyncSup.setProperties(AppConstants.EMAIL_INVOICE_SUBJECT, stringUtils.prepareEmailContent(AppConstants.EMAIL_MASS_SUPPLIER_NOTIFICATION + credentials), emailRecipient);
 					emailAsyncSup.setMailSender(mailSenderObj);
 					Thread emailThreadSup = new Thread(emailAsyncSup);
-					emailThreadSup.start();	
+					//emailThreadSup.start();	
 				}
 				json.put("success", true);
 				json.put("count", count);
@@ -1487,13 +1487,13 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			return "No existen recibos por facturar.";
 	    }
 
-		//Valida que se corresponda el mismo recibo para todas las líneas seleccionadas.
+		//Valida que se corresponda el mismo recibo para todas las lÃ­neas seleccionadas.
 		int originalReceipt = 0;
 		for(Receipt r :requestedReceiptList) {
 			if(originalReceipt == 0) {
 				originalReceipt = r.getDocumentNumber();
 			} else if (originalReceipt != r.getDocumentNumber()) {
-				return "Las líneas seleccionadas deben corresponder al mismo número de recibo.";
+				return "Las lÃ­neas seleccionadas deben corresponder al mismo nÃºmero de recibo.";
 			}
 		}
 		
@@ -1518,7 +1518,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					    EmailServiceAsync emailAsyncSup = new EmailServiceAsync();
 						emailAsyncSup.setProperties(
 								AppConstants.EMAIL_NO_COMPLIANCE_INVOICE,
-								AppConstants.EMAIL_NO_COMPLIANCE_INVOICE_SUPPLIER + " Número: " + s.getAddresNumber() + "<br /> Nombre: " + s.getRazonSocial() + "<br />",
+								AppConstants.EMAIL_NO_COMPLIANCE_INVOICE_SUPPLIER + " NÃºmero: " + s.getAddresNumber() + "<br /> Nombre: " + s.getRazonSocial() + "<br />",
 								altEmail);
 						emailAsyncSup.setMailSender(mailSenderObj);
 						Thread emailThreadSup = new Thread(emailAsyncSup);
@@ -1536,7 +1536,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 						emailThreadSup.start();	
 					}
 					
-					return "Los registros indican que cuenta con problemas fiscales y no se podrán cargar facturas en este momento.";
+					return "Los registros indican que cuenta con problemas fiscales y no se podrÃ¡n cargar facturas en este momento.";
 		    } 
 		}
 
@@ -1595,7 +1595,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					}
 					
 					if(invoiceDTO == null){
-						return "El archivo " + fileName + ".xml contenido en el ZIP no es aceptado.<br />NO ha pasado la fase de verificación, la solicutud no será cargada.";
+						return "El archivo " + fileName + ".xml contenido en el ZIP no es aceptado.<br />NO ha pasado la fase de verificaciÃ³n, la solicutud no serÃ¡ cargada.";
 					}
 					
 			    	elementDTO.setInvoiceDTO(invoiceDTO);
@@ -1642,7 +1642,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			e.printStackTrace();
 		}
 
-        //Validación Montos
+        //ValidaciÃ³n Montos
 		UDC porcentajeMaxUdc = udcService.searchBySystemAndKey("PORCENTAJE", "MAX");
 		UDC porcentajeMinUdc = udcService.searchBySystemAndKey("PORCENTAJE", "MIN");		
 		UDC montoLimiteUdc = udcService.searchBySystemAndKey("MONTO", "LIMITE");		
@@ -1698,7 +1698,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
                 	}                
 					
 					if(!invCurrency.equals(oCurr)) {
-						return "La moneda de la factura es " + invCurrency + " sin embargo, el código de moneda de la orden de compra es " + oCurr + " UUID:" + zElement.getInvoiceDTO().getUuid();
+						return "La moneda de la factura es " + invCurrency + " sin embargo, el cÃ³digo de moneda de la orden de compra es " + oCurr + " UUID:" + zElement.getInvoiceDTO().getUuid();
 					}
 					
 					if(!AppConstants.DEFAULT_CURRENCY.equals(invCurrency)) {
@@ -1737,7 +1737,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			totalImporteMenor = foreignOrderAmount;
 		}
 		
-		// Validación con los importes del recibo:
+		// ValidaciÃ³n con los importes del recibo:
 		String tipoValidacion ="";
 		if(montoLimite != 0) {
 			if(invoiceTotalAmount >= montoLimite) {
@@ -1760,12 +1760,12 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 		totalImporteMenor = totalImporteMenor /100;	
 
 		if(totalImporteMayor < invoiceAmount || totalImporteMenor > invoiceAmount) {
-			return "El total de las facturas " + currencyFormat.format(invoiceAmount) + " no coincide con el total de los recibos seleccionados " + currencyFormat.format(totalImporte) + ". Tipo de validación: " + tipoValidacion + ".";
+			return "El total de las facturas " + currencyFormat.format(invoiceAmount) + " no coincide con el total de los recibos seleccionados " + currencyFormat.format(totalImporte) + ". Tipo de validaciÃ³n: " + tipoValidacion + ".";
 		}
 		
 		HttpServletRequest request = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest();
 		
-        // Envío Proceso Batch        
+        // EnvÃ­o Proceso Batch        
 		ProcessBatchInvoice bp = new ProcessBatchInvoice();
 		bp.setDataAuditService(dataAuditService);
 		bp.setRemoteAddress(request.getRemoteAddr());
@@ -1809,13 +1809,13 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 		try {
 			boolean isTaxValidationOn = true;
 			
-			//Validación de Proveedor
+			//ValidaciÃ³n de Proveedor
 			Supplier s = supplierService.searchByAddressNumber(addressBook);
 			if(s == null) {
-				return "El proveedor no está registrado en el portal.";
+				return "El proveedor no estÃ¡ registrado en el portal.";
 			}
 			
-			//Validación del SAT
+			//ValidaciÃ³n del SAT
 			DecimalFormat currencyFormat = new DecimalFormat("$#,###.###");
 			UDC udcCfdi = udcService.searchBySystemAndKey("VALIDATE", "CFDI");
 			
@@ -1824,24 +1824,24 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					if("TRUE".equals(udcCfdi.getStrValue1())) {
 						String vcfdi = validaComprobanteSAT(inv);
 						if(!"".equals(vcfdi)) {
-							return "Error de validación ante el SAT, favor de validar con su emisor fiscal.";
+							return "Error de validaciÃ³n ante el SAT, favor de validar con su emisor fiscal.";
 						}
 						
 						String vNull = validateInvNull(inv);
 						if(!"".equals(vNull)) {
-							return "Error al validar el archivo XML, no se encontró el campo " + vNull + ".";
+							return "Error al validar el archivo XML, no se encontrÃ³ el campo " + vNull + ".";
 						}
 					}
 				}
 			}else {
 				String vcfdi = validaComprobanteSAT(inv);
 				if(!"".equals(vcfdi)) {
-					return "Error de validación ante el SAT, favor de validar con su emisor fiscal.";
+					return "Error de validaciÃ³n ante el SAT, favor de validar con su emisor fiscal.";
 				}
 				
 				String vNull = validateInvNull(inv);
 				if(!"".equals(vNull)) {
-					return "Error al validar el archivo XML, no se encontró el campo " + vNull + ".";
+					return "Error al validar el archivo XML, no se encontrÃ³ el campo " + vNull + ".";
 				}
 			}
 			
@@ -1893,7 +1893,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				e.printStackTrace();
 			}
 
-			//Validación CFDI Versión 3.3
+			//ValidaciÃ³n CFDI VersiÃ³n 3.3
 			if(AppConstants.CFDI_V3.equals(inv.getVersion())) {
 				UDC udcVersion = udcService.searchBySystemAndKey("VERSIONCFDI", "VERSION33");
 				if(udcVersion != null) {
@@ -1904,7 +1904,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 							String strLastDateAllowed = udcVersion.getStrValue1();
 							Date dateLastDateAllowed = formatter.parse(strLastDateAllowed);
 							if(invDate.compareTo(dateLastDateAllowed) > 0) {
-								return "La versión del CFDI no es válida.";
+								return "La versiÃ³n del CFDI no es vÃ¡lida.";
 							}
 						}
 					} catch (Exception e) {
@@ -1941,31 +1941,31 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					}
 				}
 				
-				//Validación de Factura Repetida
+				//ValidaciÃ³n de Factura Repetida
 				FiscalDocuments fd = fiscalDocumentService.getFiscalDocumentsByUuid(inv.getUuid());
 				if(fd != null) {
 					return "La factura que intenta ingresar ya fue cargada previamente.";
 				}
 				
-				//Validación de Tipo de Cambio
+				//ValidaciÃ³n de Tipo de Cambio
 				if(!AppConstants.DEFAULT_CURRENCY.equals(invCurrency)) {				
 					if(exchangeRate == 0) {
-						return "La moneda de la factura es " + invCurrency + " sin embargo, no está definido un tipo de cambio.";
+						return "La moneda de la factura es " + invCurrency + " sin embargo, no estÃ¡ definido un tipo de cambio.";
 					}
 				}
 				
-				//Validación de Moneda
+				//ValidaciÃ³n de Moneda
 				String oCurr = "";
-				if("PME".equals(po.getCurrecyCode())) {//Código de Moneda de Pesos en JDE
+				if("PME".equals(po.getCurrecyCode())) {//CÃ³digo de Moneda de Pesos en JDE
 					oCurr = "MXN";
 				}else {
 					oCurr = po.getCurrecyCode();
 				}
 				if(!invCurrency.equals(oCurr)) {
-					return "La moneda de la factura es " + invCurrency + " sin embargo, el código de moneda de la orden de compra es " + oCurr;
+					return "La moneda de la factura es " + invCurrency + " sin embargo, el cÃ³digo de moneda de la orden de compra es " + oCurr;
 				}
 				
-				//Validación de Año Actual
+				//ValidaciÃ³n de AÃ±o Actual
 				int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 				Calendar cal = Calendar.getInstance();
 				cal.set(Calendar.YEAR, currentYear);
@@ -1979,7 +1979,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				if(currentYearRule) {
 					try {
 						if(invDate.compareTo(startYear) < 0) {
-							return "La fecha de emisión de la factura no puede ser anterior al primero de Enero del año en curso";
+							return "La fecha de emisiÃ³n de la factura no puede ser anterior al primero de Enero del aÃ±o en curso";
 						}
 					}catch(Exception e) {
 						log4j.error("Exception" , e);
@@ -1988,7 +1988,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					}	
 				}
 				
-				//Validación de Mes
+				//ValidaciÃ³n de Mes
 				
 				UDC udcCurrentMonth = udcService.searchBySystemAndKey("VALIDARMESCURSO", "FACTURA");
 				if (udcCurrentMonth != null && "TRUE".equals(udcCurrentMonth.getStrValue1())) {
@@ -2010,7 +2010,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 
 				}
 			    
-			    //Validación de Proveedores Incumplidos
+			    //ValidaciÃ³n de Proveedores Incumplidos
 				NonComplianceSupplier ncs = this.nonComplianceSupplierService.searchByTaxId(s.getRfc(), 0, 0);
 			    if (ncs != null && (
 			      ncs.getRefDate1().contains("Definitivo") || 
@@ -2030,7 +2030,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 						    EmailServiceAsync emailAsyncSup = new EmailServiceAsync();
 							emailAsyncSup.setProperties(
 									AppConstants.EMAIL_NO_COMPLIANCE_INVOICE,
-									AppConstants.EMAIL_NO_COMPLIANCE_INVOICE_SUPPLIER + " Número: " + s.getAddresNumber() + "<br /> Nombre: " + s.getRazonSocial() + "<br />",
+									AppConstants.EMAIL_NO_COMPLIANCE_INVOICE_SUPPLIER + " NÃºmero: " + s.getAddresNumber() + "<br /> Nombre: " + s.getRazonSocial() + "<br />",
 									altEmail);
 							emailAsyncSup.setMailSender(mailSenderObj);
 							Thread emailThreadSup = new Thread(emailAsyncSup);
@@ -2046,11 +2046,11 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 							Thread emailThreadSup = new Thread(emailAsyncSup);
 							emailThreadSup.start();
 						
-						return "Los registros indican que cuenta con problemas fiscales y no se podrán cargar facturas en este momento.";
+						return "Los registros indican que cuenta con problemas fiscales y no se podrÃ¡n cargar facturas en este momento.";
 
 			    }
 				
-			    //Validación de Emisor
+			    //ValidaciÃ³n de Emisor
 				if(rfcEmisor != null) {
 					if(!"".equals(rfcEmisor)) {
 						if(!s.getRfc().equals(rfcEmisor)) {
@@ -2059,7 +2059,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					}
 				}
 				
-				//Validación de Receptor
+				//ValidaciÃ³n de Receptor
 				String cfdiReceptor = inv.getReceptor().getUsoCFDI();
 				String rfcReceptor = inv.getRfcReceptor();			
 				boolean receptorValido = false;
@@ -2073,10 +2073,10 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					}
 				}
 				if(!receptorValido) {
-					return "El RFC receptor " + inv.getRfcReceptor() + " no está permitido para la carga de facturas.";
+					return "El RFC receptor " + inv.getRfcReceptor() + " no estÃ¡ permitido para la carga de facturas.";
 				}
 				
-				//Validación de Compañía
+				//ValidaciÃ³n de CompaÃ±Ã­a
 				boolean companyRfcIsValid = false;
 				List<UDC> companyRfc = udcDao.searchBySystem("COMPANYRFC");
 				if(companyRfc != null) {
@@ -2093,10 +2093,10 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				}
 
 				if(!companyRfcIsValid) {
-					return "La compañía de la factura no corresponde a la compañía de la orden de compra";
+					return "La compaÃ±Ã­a de la factura no corresponde a la compaÃ±Ã­a de la orden de compra";
 				}
 
-				//Validación de USO CFDI
+				//ValidaciÃ³n de USO CFDI
 				boolean usoCFDIAllowed = false;
 				List<UDC> udcList =  udcService.searchBySystem("USOCFDI");
 				if(udcList != null) {
@@ -2109,7 +2109,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				}
 				
 				if(!usoCFDIAllowed) {
-					return "El uso CFDI " + cfdiReceptor + " no está permitido para su razón social.";
+					return "El uso CFDI " + cfdiReceptor + " no estÃ¡ permitido para su razÃ³n social.";
 				}
 				
 				boolean paymentComplException = false;
@@ -2123,15 +2123,15 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					}
 				}
 				
-				//Validación de Complementos de Pago Pendientes
+				//ValidaciÃ³n de Complementos de Pago Pendientes
 				if(!paymentComplException && AppConstants.LOCAL_COUNTRY_CODE.equals(s.getCountry())) {
 					String pendingList = purchaseOrderService.getPendingReceiptsComplPago(s.getAddresNumber());
 					if(!"".equals(pendingList)){
-						return "El sistema detectó que tiene las siguientes facturas (uuid) con COMPLEMENTOS DE PAGO pendientes de carga: <br /> " + pendingList;
+						return "El sistema detectÃ³ que tiene las siguientes facturas (uuid) con COMPLEMENTOS DE PAGO pendientes de carga: <br /> " + pendingList;
 					}
 				}
 				
-				//Validación de los importes del recibo			
+				//ValidaciÃ³n de los importes del recibo			
 				UDC porcentajeMaxUdc = udcService.searchBySystemAndKey("PORCENTAJE", "MAX");
 				UDC porcentajeMinUdc = udcService.searchBySystemAndKey("PORCENTAJE", "MIN");				
 				UDC montoLimiteUdc = udcService.searchBySystemAndKey("MONTO", "LIMITE");				
@@ -2175,7 +2175,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					}
 				}
 
-				//JSAAVEDRA: Validación de impuestos
+				//JSAAVEDRA: ValidaciÃ³n de impuestos
 				if(isTaxValidationOn) {
 					String tasaOCuota = "";
 					List<UDC> udcTax = udcDao.searchBySystem("TAXCODE");
@@ -2219,7 +2219,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 										if("".equals(tasasRequeridas)) {
 											tasasRequeridas = "N/A";
 										}
-										return "El CFDI no cumple con los impuestos trasladados requeridos, favor de verificarlo con el comprador.<br />Código de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos trasladados que se requiren: " + tasasRequeridas + ".";
+										return "El CFDI no cumple con los impuestos trasladados requeridos, favor de verificarlo con el comprador.<br />CÃ³digo de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos trasladados que se requiren: " + tasasRequeridas + ".";
 									}
 								}					
 							}
@@ -2232,7 +2232,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 										if("".equals(tasasRequeridas)) {
 											tasasRequeridas = "N/A";
 										}
-										return "El CFDI contiene impuestos trasladados que no corresponden con el recibo, favor de verificarlo con el comprador.<br />Código de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos trasladados que se requiren: " + tasasRequeridas + ". Tasa no válida: " + transTaxValue + ".";
+										return "El CFDI contiene impuestos trasladados que no corresponden con el recibo, favor de verificarlo con el comprador.<br />CÃ³digo de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos trasladados que se requiren: " + tasasRequeridas + ". Tasa no vÃ¡lida: " + transTaxValue + ".";
 									}
 								}
 							}
@@ -2258,7 +2258,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 										if("".equals(tasasRequeridas)) {
 											tasasRequeridas = "N/A";
 										}
-										return "El CFDI no cumple con los impuestos retenidos requeridos, favor de verificarlo con el comprador.<br />Código de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos retenidos que se requiren: " + tasasRequeridas + ".";
+										return "El CFDI no cumple con los impuestos retenidos requeridos, favor de verificarlo con el comprador.<br />CÃ³digo de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos retenidos que se requiren: " + tasasRequeridas + ".";
 									}
 								}
 							}
@@ -2271,16 +2271,16 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 										if("".equals(tasasRequeridas)) {
 											tasasRequeridas = "N/A";
 										}
-										return "El CFDI contiene impuestos retenidos que no corresponden con el recibo, favor de verificarlo con el comprador.<br />Código de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos retenidos que se requiren: " + tasasRequeridas + ". Tasa no válida: " + retTaxValue + ".";
+										return "El CFDI contiene impuestos retenidos que no corresponden con el recibo, favor de verificarlo con el comprador.<br />CÃ³digo de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos retenidos que se requiren: " + tasasRequeridas + ". Tasa no vÃ¡lida: " + retTaxValue + ".";
 									}
 								}
 							}
 							
 						} else {
-							return "El recibo no cuenta con un código de impuestos válido, favor de verificarlo con el comprador.<br />Código de impuestos del recibo: " + receiptTaxCode;
+							return "El recibo no cuenta con un cÃ³digo de impuestos vÃ¡lido, favor de verificarlo con el comprador.<br />CÃ³digo de impuestos del recibo: " + receiptTaxCode;
 						}
 					} else {
-						return "El recibo no cuenta con un código de impuestos válido, favor de verificarlo con el comprador.";
+						return "El recibo no cuenta con un cÃ³digo de impuestos vÃ¡lido, favor de verificarlo con el comprador.";
 					}
 				}
 				
@@ -2295,7 +2295,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					}
 				}
 				
-				//Validación de Retenciones
+				//ValidaciÃ³n de Retenciones
 				String tipoValidacion ="";
 				
 				if(isRetainedValidationOn) {
@@ -2339,7 +2339,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					}
 				}
 
-				//Validación de Montos
+				//ValidaciÃ³n de Montos
 				double totalImporteMayor = 0;
 				double totalImporteMenor = 0;
 				double invoiceTotalAmount = 0;
@@ -2392,13 +2392,13 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				invoiceAmount = invoiceAmount /100;
 				
 				if(totalImporteMayor < invoiceAmount || totalImporteMenor > invoiceAmount) {
-					return "El total de la factura " + currencyFormat.format(invoiceAmount) + " no coincide con el total de los recibos seleccionados " + currencyFormat.format(currentInvoiceAmount) + ". Tipo de validación:" + tipoValidacion;
+					return "El total de la factura " + currencyFormat.format(invoiceAmount) + " no coincide con el total de los recibos seleccionados " + currencyFormat.format(currentInvoiceAmount) + ". Tipo de validaciÃ³n:" + tipoValidacion;
 				}
 			}
 		} catch (NumberFormatException e) {
 			log4j.error("Exception" , e);
 			e.printStackTrace();
-			return "Ocurrió un error al validar los datos de la factura.";
+			return "OcurriÃ³ un error al validar los datos de la factura.";
 		}
 		
 		return "";
@@ -2445,7 +2445,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			}
 
 			//Fecha de Vencimiento
-			//Date estimatedPaymentDate = this.getEstimatedPaymentDate(supplier); //Se calcula en la última aprobación
+			//Date estimatedPaymentDate = this.getEstimatedPaymentDate(supplier); //Se calcula en la Ãºltima aprobaciÃ³n
 			
 			FiscalDocuments o = new FiscalDocuments();
 			o.setAccountingAccount("");
@@ -2472,7 +2472,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			o.setRfcReceptor(inv.getRfcReceptor());
 			o.setMetodoPago(inv.getMetodoPago());
 			o.setFormaPago(inv.getFormaPago());
-			//o.setEstimatedPaymentDate(estimatedPaymentDate); //Se calcula en la última aprobación
+			//o.setEstimatedPaymentDate(estimatedPaymentDate); //Se calcula en la Ãºltima aprobaciÃ³n
 			o.setInvoiceUploadDate(new Date());
 			o.setOrderCompany(po.getOrderCompany());
 			o.setOrderNumber(po.getOrderNumber());
@@ -2490,7 +2490,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			po.setOrderStauts(AppConstants.STATUS_OC_PENDING);
 			po.setInvoiceUploadDate(invDate);
 			po.setSentToWns(null);
-			//po.setEstimatedPaymentDate(estimatedPaymentDate); //Se calcula en la última aprobación
+			//po.setEstimatedPaymentDate(estimatedPaymentDate); //Se calcula en la Ãºltima aprobaciÃ³n
 			if(AppConstants.ORDER_TYPE_WITHOUT_RECEIPTS.equals(po.getOrderType())) {
 				po.setInvDate(invDate);
 				po.setFolio(inv.getFolio());
@@ -2507,7 +2507,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				r.setFolio(inv.getFolio());
 				r.setSerie(inv.getSerie());
 				r.setUuid(inv.getUuid());
-				//r.setEstPmtDate(estimatedPaymentDate); //Se calcula en la última aprobación
+				//r.setEstPmtDate(estimatedPaymentDate); //Se calcula en la Ãºltima aprobaciÃ³n
 				r.setUploadInvDate(new Date());
 				r.setStatus(AppConstants.STATUS_OC_PENDING);
 				r.setFormaPago(inv.getFormaPago());
@@ -2641,7 +2641,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				documentsDao.saveDocuments(doc);
 			}
 			
-			//Notificación Proveedor		
+			//NotificaciÃ³n Proveedor		
 			EmailServiceAsync emailAsyncSup = new EmailServiceAsync();
 			emailAsyncSup.setProperties(AppConstants.EMAIL_INV_ACCPET_BUYER + po.getOrderNumber(),
 					this.stringUtils.prepareEmailContent(String.format(AppConstants.FISCAL_DOC_MAIL_MSJ_FAC_PROV,
@@ -2651,7 +2651,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			Thread emailThreadSup = new Thread(emailAsyncSup);
 			emailThreadSup.start();
 			
-			//Notificación Aprobador
+			//NotificaciÃ³n Aprobador
 			EmailServiceAsync emailAsyncSup1 = new EmailServiceAsync();
 			emailAsyncSup1.setProperties(AppConstants.EMAIL_INV_ACCPET_BUYER + po.getOrderNumber(),
 					this.stringUtils.prepareEmailContent(String.format(AppConstants.FISCAL_DOC_MAIL_MSJ_FAC_COMP,
@@ -2663,7 +2663,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 		} catch (Exception e) {
 			log4j.error("Exception" , e);
 			e.printStackTrace();
-			return "Ocurrió un error al guardar los archivos de la factura.";
+			return "OcurriÃ³ un error al guardar los archivos de la factura.";
 		}
 		
 		return "";
@@ -2727,14 +2727,14 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				if("TRUE".equals(udcCfdi.getStrValue1())) {
 					String vcfdi = validaComprobanteSAT(inv);
 					if(!"".equals(vcfdi)) {
-						return "Error de validación ante el SAT, favor de validar con su emisor fiscal.";
+						return "Error de validaciÃ³n ante el SAT, favor de validar con su emisor fiscal.";
 					}
 				}
 			}
 		}else {
 			String vcfdi = validaComprobanteSAT(inv);
 			if(!"".equals(vcfdi)) {
-				return "Error de validación ante el SAT, favor de validar con su emisor fiscal.";
+				return "Error de validaciÃ³n ante el SAT, favor de validar con su emisor fiscal.";
 			}
 		}
 		
@@ -2770,7 +2770,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			e.printStackTrace();
 		}
 		
-		//Validación CFDI Versión 3.3
+		//ValidaciÃ³n CFDI VersiÃ³n 3.3
 		if(AppConstants.CFDI_V3.equals(inv.getVersion())) {
 			UDC udcVersion = udcService.searchBySystemAndKey("VERSIONCFDI", "VERSION33");
 			if(udcVersion != null) {
@@ -2781,7 +2781,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 						String strLastDateAllowed = udcVersion.getStrValue1();
 						Date dateLastDateAllowed = formatter.parse(strLastDateAllowed);
 						if(invDate.compareTo(dateLastDateAllowed) > 0) {
-							return "La versión del CFDI no es válida.";
+							return "La versiÃ³n del CFDI no es vÃ¡lida.";
 						}
 					}
 				} catch (Exception e) {
@@ -2816,7 +2816,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 		if(allRules) {		
 		if(!AppConstants.DEFAULT_CURRENCY.equals(invCurrency)) {			
 			if(exchangeRate == 0) {
-				return "La moneda de la nota de crédito es " + invCurrency + " sin embargo, no existe definido un tipo de cambio.";
+				return "La moneda de la nota de crÃ©dito es " + invCurrency + " sin embargo, no existe definido un tipo de cambio.";
 			}
 		}
 		
@@ -2827,7 +2827,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			oCurr = po.getCurrecyCode();
 		}
 		if(!invCurrency.equals(oCurr)) {
-			return "La moneda de la nota de crédito es " + invCurrency + " sin embargo, el código de moneda de la orden de compra es " + oCurr;
+			return "La moneda de la nota de crÃ©dito es " + invCurrency + " sin embargo, el cÃ³digo de moneda de la orden de compra es " + oCurr;
 		}
 		
 		int currentYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -2837,7 +2837,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 		Date startYear = cal.getTime();
 		try {
 			if(invDate.compareTo(startYear) < 0) {
-				return "La fecha de emisión de la factura no puede ser anterior al primero de Enero del año actual";
+				return "La fecha de emisiÃ³n de la factura no puede ser anterior al primero de Enero del aÃ±o actual";
 			}
 		}catch(Exception e) {
 			log4j.error("Exception" , e);
@@ -2856,17 +2856,17 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			}
 			
 			if(requestedReceiptList.isEmpty()) {
-				return "No existen recibos para cargar la nota de crédito";
+				return "No existen recibos para cargar la nota de crÃ©dito";
 			}			
 		}else {
-			return "No existen recibos para cargar la nota de crédito";
+			return "No existen recibos para cargar la nota de crÃ©dito";
 	    }
 				
 		String cfdiRel = inv.getCfdiRelacionado();
 		if(cfdiRel != null) {
 			List<Receipt> invReceipts = purchaseOrderService.getSuplierInvoicedReceipts(addressBook, cfdiRel);
 			if(invReceipts == null) {
-				return "No existe la factura relacionada al CFDI de la nota de crédito";
+				return "No existe la factura relacionada al CFDI de la nota de crÃ©dito";
 			}else {
 				if(invReceipts.size() > 0) {
 					double invTotalAmt = 0;
@@ -2880,15 +2880,15 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					}
 					if(domesticCurrency.equals(invCurrency)) {
 						if(invTotalAmt < credTotalAmt) {
-							return "El total de la nota de crédito excede el total de las facturas correlacionadas";
+							return "El total de la nota de crÃ©dito excede el total de las facturas correlacionadas";
 						}
 					} else {
 						if(invForeignTotalAmt < credTotalAmt) {
-							return "El total de la nota de crédito excede el total de las facturas correlacionadas";
+							return "El total de la nota de crÃ©dito excede el total de las facturas correlacionadas";
 						}
 					}
 				}else {
-					return "No existe la factura relacionada al CFDI de la nota de crédito";
+					return "No existe la factura relacionada al CFDI de la nota de crÃ©dito";
 				}
 			}
 		}else {
@@ -2916,7 +2916,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					    EmailServiceAsync emailAsyncSup = new EmailServiceAsync();
 						emailAsyncSup.setProperties(
 								AppConstants.EMAIL_NO_COMPLIANCE_INVOICE,
-								AppConstants.EMAIL_NO_COMPLIANCE_INVOICE_SUPPLIER + " Número: " + s.getAddresNumber() + "br /> Nombre: " + s.getRazonSocial(),
+								AppConstants.EMAIL_NO_COMPLIANCE_INVOICE_SUPPLIER + " NÃºmero: " + s.getAddresNumber() + "br /> Nombre: " + s.getRazonSocial(),
 								altEmail);
 						emailAsyncSup.setMailSender(mailSenderObj);
 						Thread emailThreadSup = new Thread(emailAsyncSup);
@@ -2932,11 +2932,11 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 						Thread emailThreadSup = new Thread(emailAsyncSup);
 						emailThreadSup.start();
 					
-					return "Los registros indican que cuenta con problemas fiscales y no se podrán cargar facturas en este momento.";
+					return "Los registros indican que cuenta con problemas fiscales y no se podrÃ¡n cargar facturas en este momento.";
 
 		    } 
 		}else {
-			return "El proveedor no existe en el catálogo de la aplicación";
+			return "El proveedor no existe en el catÃ¡logo de la aplicaciÃ³n";
 		}
 		
 		
@@ -2959,7 +2959,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 		if(udcDate != null) {
 			if(!udcDate.getStrValue1().equals(s.getTipoProductoServicio())){
 				if(invDate.before(orderDate)) {
-					return "Error: La fecha de la nota de crédito no puede ser anterior a la fecha de emisión de la orden.";
+					return "Error: La fecha de la nota de crÃ©dito no puede ser anterior a la fecha de emisiÃ³n de la orden.";
 				}
 			}
 		}
@@ -2968,7 +2968,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 		if(rfcEmisor != null) {
 			if(!"".equals(rfcEmisor)) {
 				if(!s.getRfc().equals(rfcEmisor)) {
-					return "La nota de crédito ingresada no pertenece al RFC del emisor del proveedor registrado como " + s.getRfc();
+					return "La nota de crÃ©dito ingresada no pertenece al RFC del emisor del proveedor registrado como " + s.getRfc();
 				}
 			}
 		}
@@ -2987,7 +2987,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			return "El RFC receptor " + inv.getRfcReceptor() + " no es permitido para carga de documentos fiscales.";
 		}
 				
-		// Validación los importes del recibo:		
+		// ValidaciÃ³n los importes del recibo:		
 		if(AppConstants.NC_FIELD.equals(tipoComprobante)){
 			Users u = usersService.searchCriteriaUserName(po.getAddressNumber());
 			
@@ -3062,7 +3062,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			invoiceAmount = invoiceAmount/100;
 			
 			if(totalImporteMayor < invoiceAmount || totalImporteMenor > invoiceAmount) {
-				return "El total de la nota de crédito no coincide con el total de los recibos seleccionados. Tipo de validación:" + tipoValidacion;
+				return "El total de la nota de crÃ©dito no coincide con el total de los recibos seleccionados. Tipo de validaciÃ³n:" + tipoValidacion;
 				
 			}else {				
 				po.setInvoiceAmount(po.getInvoiceAmount() + inv.getTotal());
@@ -3149,7 +3149,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 		if(rfcEmisor != null) {
 			if(!"".equals(rfcEmisor)) {
 				if(!s.getRfc().equals(rfcEmisor)) {
-					return "La nota de crédito no pertenece al emisor " + s.getRfc();
+					return "La nota de crÃ©dito no pertenece al emisor " + s.getRfc();
 				}
 			}
 		}
@@ -3188,13 +3188,13 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			UDC udc = udcService.searchBySystemAndKey(AppConstants.INVOICE_FIELD_UDC, "MF_PAGO");
 			if(udc != null){
 				if(!udc.getStrValue1().equals(inv.getMetodoPago())){
-					return "El método de pago de la FACTURA debe ser " + udc.getStrValue1();	
+					return "El mÃ©todo de pago de la FACTURA debe ser " + udc.getStrValue1();	
 				}
 				if(!udc.getStrValue2().equals(inv.getFormaPago())){
 					return "La forma de pago de la FACTURA debe ser " + udc.getStrValue2();	
 				}
 			}else{
-				return "No existe método de pago para la factura";
+				return "No existe mÃ©todo de pago para la factura";
 			}
 			
 			List<PurchaseOrder> list = purchaseOrderService.getPendingPaymentOrders(documentNumber, 
@@ -3206,7 +3206,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				for (PurchaseOrder o : list) {
 					str = str + o.getOrderNumber() + ",";
 				}
-				return "Los registros detectaron que tiene las siguientes órdenes de compra PAGADAS con COMPLEMENTOS DE PAGO Pendientes: <br /> "
+				return "Los registros detectaron que tiene las siguientes Ã³rdenes de compra PAGADAS con COMPLEMENTOS DE PAGO Pendientes: <br /> "
 						+ str;
 			}
 			
@@ -3217,7 +3217,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			double transAmount = invoiceAmount - cnAmount;
 			
 			if(orderAmount != transAmount) {
-				return "El valor de la factura menos la nota de crédito no coinciden con el total recibido en la orde de compra.";
+				return "El valor de la factura menos la nota de crÃ©dito no coinciden con el total recibido en la orde de compra.";
 			}
 			
 			po.setInvoiceAmount(transAmount);
@@ -3336,7 +3336,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			}
 			
 		}else {
-			return "Error de validación ante el SAT, favor de validar con su emisor fiscal";	
+			return "Error de validaciÃ³n ante el SAT, favor de validar con su emisor fiscal";	
 		}
 		
 		return "";
@@ -3450,7 +3450,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 							currentInvoiceAmount = currentInvoiceAmount /100;
  							
 							if(impPagado != currentInvoiceAmount) {
-     	                    	return "Error: El importe de la línea de pago para el " + uuid + " es diferente en el complemento y la factura. Importe Complemento=" + impPagado + " / Importe Factura=" + po.getInvoiceAmount();
+     	                    	return "Error: El importe de la lÃ­nea de pago para el " + uuid + " es diferente en el complemento y la factura. Importe Complemento=" + impPagado + " / Importe Factura=" + po.getInvoiceAmount();
          					}
  						}
  					}else {
@@ -3610,14 +3610,14 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					}					
 				}
 
-				//Se envía el archivo PDF
+				//Se envÃ­a el archivo PDF
 				for(UserDocument doc : docs) {					
 					if(doc.getType().trim().equals("application/pdf")) {
 	                	File file = new File(System.getProperty("java.io.tmpdir")+"/"+ inv.getUuid() + ".pdf");
 	                	Path filePath = Paths.get(file.getAbsolutePath());
 	                	Files.write(filePath, doc.getContent());	                	
 	                	this.sendFileToRemote(file, inv.getUuid() + ".pdf");	                	
-	                	log4j.info("Se envía archivo " + inv.getUuid() + ".pdf");
+	                	log4j.info("Se envÃ­a archivo " + inv.getUuid() + ".pdf");
 		            	file.delete();
 					}
 				}
@@ -3638,14 +3638,14 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			for(String uuid : list) {
 				List<UserDocument> docs = documentsDao.searchCriteria(uuid);
 
-				//Se envía el archivo PDF
+				//Se envÃ­a el archivo PDF
 				for(UserDocument doc : docs) {					
 					if(doc.getType().trim().equals("application/pdf")) {
 	                	File file = new File(System.getProperty("java.io.tmpdir")+"/"+ uuid + ".pdf");
 	                	Path filePath = Paths.get(file.getAbsolutePath());
 	                	Files.write(filePath, doc.getContent());	                	
 	                	this.sendFileToRemote(file, uuid + ".pdf");	                	
-	                	log4j.info("Se envía archivo " + uuid + ".pdf");
+	                	log4j.info("Se envÃ­a archivo " + uuid + ".pdf");
 		            	file.delete();
 					}
 				}
@@ -3693,7 +3693,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					fi.setUsuarioImpuestos(fit.getUsuarioImpuestos());
 					fi.setUuid(fit.getUuid());
 				} else {
-					log4j.info("No se encontró la factura foránea: " + request.getUuid() + ".");
+					log4j.info("No se encontrÃ³ la factura forÃ¡nea: " + request.getUuid() + ".");
 					continue;
 				}
 				
@@ -3701,7 +3701,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				List<Receipt> requestedReceiptList = new ArrayList<Receipt>();
 				List<Receipt> receiptArray= purchaseOrderService.getOrderReceipts(request.getDocumentNumber(), request.getAddressBook(), request.getDocumentType(),po.getOrderCompany());
 				
-				//Verificar que no esté registrado el uuid en recibos
+				//Verificar que no estÃ© registrado el uuid en recibos
 				if(receiptArray != null) {					
 					for(Receipt r : receiptArray) {
 						if(r.getUuid() != null && !r.getUuid().trim().isEmpty()) {
@@ -3713,7 +3713,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				}
 				
 				if(requestedReceiptList.isEmpty()) {
-					log4j.info("No se encontraron recibos para la factura foránea: " + request.getUuid() + ".");
+					log4j.info("No se encontraron recibos para la factura forÃ¡nea: " + request.getUuid() + ".");
 				} else {
 					log4j.info("Se obtienen " + requestedReceiptList.size() + " recibos.");
 					
@@ -3734,7 +3734,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					                	document.setUuid(fit.getUuid());
 					                	this.sendFileToRemote(file, fit.getUuid() + ".pdf");				                
 					                	this.update(document, null, null);
-					                	log4j.info("FACTURA FORANEA: Se envía archivo " + fit.getUuid() + "");
+					                	log4j.info("FACTURA FORANEA: Se envÃ­a archivo " + fit.getUuid() + "");
 					                	file.delete();
 					                	break;
 									}
@@ -3793,10 +3793,10 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				if(importe <= limSupDbl) {
 					return "";
 				}else {
-					return " Límite inferior " + limInfStr + " y superior "  + limSupStr;
+					return " LÃ­mite inferior " + limInfStr + " y superior "  + limSupStr;
 				}
 			}else {
-				return " Límite inferior " + limInfStr + " y superior "  + limSupStr;
+				return " LÃ­mite inferior " + limInfStr + " y superior "  + limSupStr;
 			}
 		}
 		
@@ -4114,7 +4114,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
             emailService.sendEmailWithAttachExcel("Reporte de Facturas", "Reporte de facturas", user.getEmail(), file);
             
         } catch (FileNotFoundException fileNotFoundException) {
-        	log4j.error("The file not exists (No se encontró el fichero): " + fileNotFoundException);
+        	log4j.error("The file not exists (No se encontrÃ³ el fichero): " + fileNotFoundException);
         } catch (IOException ex) {
         	log4j.error("Error in file procesing (Error al procesar el fichero): " + ex);
         } finally {
@@ -4299,24 +4299,24 @@ public List<UserDocumentDTO> getListFac(String modo) {
 				if("TRUE".equals(udcCfdi.getStrValue1())) {
 					String vcfdi = validaComprobanteSAT(inv);
 					if(!"".equals(vcfdi)) {
-						return "Error de validación ante el SAT, favor de validar con su emisor fiscal.";
+						return "Error de validaciÃ³n ante el SAT, favor de validar con su emisor fiscal.";
 					}
 					
 					String vNull = validateInvNull(inv);
 					if(!"".equals(vNull)) {
-						return "Error al validar el archivo XML, no se encontró el campo " + vNull + ".";
+						return "Error al validar el archivo XML, no se encontrÃ³ el campo " + vNull + ".";
 					}
 				}
 			}
 		}else {
 			String vcfdi = validaComprobanteSAT(inv);
 			if(!"".equals(vcfdi)) {
-				return "Error de validación ante el SAT, favor de validar con su emisor fiscal.";
+				return "Error de validaciÃ³n ante el SAT, favor de validar con su emisor fiscal.";
 			}
 			
 			String vNull = validateInvNull(inv);
 			if(!"".equals(vNull)) {
-				return "Error al validar el archivo XML, no se encontró el campo " + vNull + ".";
+				return "Error al validar el archivo XML, no se encontrÃ³ el campo " + vNull + ".";
 			}
 		}
 		
@@ -4439,7 +4439,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
 				oCurr = po.getCurrecyCode();
 			}
 			if(!invCurrency.equals(oCurr)) {
-				return "La moneda de la factura es " + invCurrency + " sin embargo, el código de moneda de la orden de compra es " + oCurr;
+				return "La moneda de la factura es " + invCurrency + " sin embargo, el cÃ³digo de moneda de la orden de compra es " + oCurr;
 			}
 			
 			if(rfcEmisor != null) {
@@ -4450,20 +4450,20 @@ public List<UserDocumentDTO> getListFac(String modo) {
 				}
 			}
 			
-			//Validación de Factura Repetida
+			//ValidaciÃ³n de Factura Repetida
 			FiscalDocuments fd = fiscalDocumentService.getFiscalDocumentsByUuid(inv.getUuid());
 			if(fd != null) {
 				return "La factura que intenta ingresar ya fue cargada previamente.";
 			}
 			
-			//Validación de Tipo de Cambio
+			//ValidaciÃ³n de Tipo de Cambio
 			if(!AppConstants.DEFAULT_CURRENCY.equals(invCurrency)) {				
 				if(exchangeRate == 0) {
-					return "La moneda de la factura es " + invCurrency + " sin embargo, no está definido un tipo de cambio.";
+					return "La moneda de la factura es " + invCurrency + " sin embargo, no estÃ¡ definido un tipo de cambio.";
 				}
 			}
 						
-			//Validación de Año Actual
+			//ValidaciÃ³n de AÃ±o Actual
 			int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 			Calendar cal = Calendar.getInstance();
 			cal.set(Calendar.YEAR, currentYear);
@@ -4477,7 +4477,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
 			if(currentYearRule) {
 				try {
 					if(invDate.compareTo(startYear) < 0) {
-						return "La fecha de emisión de la factura no puede ser anterior al primero de Enero del año en curso";
+						return "La fecha de emisiÃ³n de la factura no puede ser anterior al primero de Enero del aÃ±o en curso";
 					}
 				}catch(Exception e) {
 					log4j.error("Exception" , e);
@@ -4486,7 +4486,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
 				}	
 			}
 			
-			//Validación de Mes
+			//ValidaciÃ³n de Mes
 			UDC udcCurrentMonth = udcService.searchBySystemAndKey("VALIDARMESCURSO", "FACTURA");
 			if (udcCurrentMonth != null && "TRUE".equals(udcCurrentMonth.getStrValue1())) {
 
@@ -4526,7 +4526,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
 						    EmailServiceAsync emailAsyncSup = new EmailServiceAsync();
 							emailAsyncSup.setProperties(
 									AppConstants.EMAIL_NO_COMPLIANCE_INVOICE,
-									AppConstants.EMAIL_NO_COMPLIANCE_INVOICE_SUPPLIER + " Número: " + s.getAddresNumber() + "<br /> Nombre: " + s.getRazonSocial() + "<br />",
+									AppConstants.EMAIL_NO_COMPLIANCE_INVOICE_SUPPLIER + " NÃºmero: " + s.getAddresNumber() + "<br /> Nombre: " + s.getRazonSocial() + "<br />",
 									altEmail);
 							emailAsyncSup.setMailSender(mailSenderObj);
 							Thread emailThreadSup = new Thread(emailAsyncSup);
@@ -4542,14 +4542,14 @@ public List<UserDocumentDTO> getListFac(String modo) {
 							Thread emailThreadSup = new Thread(emailAsyncSup);
 							emailThreadSup.start();
 						
-						return "Los registros indican que cuenta con problemas fiscales y no se podrán cargar facturas en este momento.";
+						return "Los registros indican que cuenta con problemas fiscales y no se podrÃ¡n cargar facturas en este momento.";
 	
 			    } 
 			}else {
-				return "El proveedor no existe en el catálogo de la aplicación";
+				return "El proveedor no existe en el catÃ¡logo de la aplicaciÃ³n";
 			}
 
-			//Validación de Compañía
+			//ValidaciÃ³n de CompaÃ±Ã­a
 			boolean companyRfcIsValid = false;
 			List<UDC> companyRfc = udcDao.searchBySystem("COMPANYRFC");
 			if(companyRfc != null) {
@@ -4585,7 +4585,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
 			if(!paymentComplException && AppConstants.LOCAL_COUNTRY_CODE.equals(s.getCountry()) && AppConstants.REF_METODO_PAGO.equals(inv.getMetodoPago())) {
 				String pendingList = purchaseOrderService.getPendingReceiptsComplPago(s.getAddresNumber());
 				if(!"".equals(pendingList)){
-					return "El sistema detectó que tiene las siguientes facturas (uuid) COMPLEMENTOS DE PAGO pendientes de carga: <br /> " + pendingList;
+					return "El sistema detectÃ³ que tiene las siguientes facturas (uuid) COMPLEMENTOS DE PAGO pendientes de carga: <br /> " + pendingList;
 				}
 			}
 	
@@ -4616,7 +4616,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
 			
 			/*
 			if(!AppConstants.REF_METODO_PAGO.equals(inv.getMetodoPago())){
-				return "El mÃ©todo de pago permitido es " + AppConstants.REF_METODO_PAGO + " y su CFDI contiene el valor " + inv.getMetodoPago() + ". Favor de emitir nuevamente el CFDI con el mÃ©todo de pago antes mencionado.";			
+				return "El mÃƒÂ©todo de pago permitido es " + AppConstants.REF_METODO_PAGO + " y su CFDI contiene el valor " + inv.getMetodoPago() + ". Favor de emitir nuevamente el CFDI con el mÃƒÂ©todo de pago antes mencionado.";			
 			}*/
 			
 			/*
@@ -4653,11 +4653,11 @@ public List<UserDocumentDTO> getListFac(String modo) {
 				}
 				
 				if(usoCfdiExcept) {
-					return "El uso CFDI " + cfdiReceptor + " no es permitido para su razón social";
+					return "El uso CFDI " + cfdiReceptor + " no es permitido para su razÃ³n social";
 				}				
 			}*/
 			
-			//Validación de USO CFDI
+			//ValidaciÃ³n de USO CFDI
 			boolean usoCFDIAllowed = false;
 			List<UDC> udcList =  udcService.searchBySystem("USOCFDI");
 			if(udcList != null) {
@@ -4670,7 +4670,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
 			}
 			
 			if(!usoCFDIAllowed) {
-				return "El uso CFDI " + cfdiReceptor + " no está permitido para su razón social.";
+				return "El uso CFDI " + cfdiReceptor + " no estÃ¡ permitido para su razÃ³n social.";
 			}
 			
 			if(rfcEmisor != null) {
@@ -4695,7 +4695,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
 				return "El RFC receptor " + inv.getRfcReceptor() + " no es permitido para carga de facturas.";
 			}
 
-			// Validación de los importes del recibo:			
+			// ValidaciÃ³n de los importes del recibo:			
 			if(AppConstants.INVOICE_FIELD.equals(tipoComprobante)){
 				Users u = usersService.searchCriteriaUserName(po.getAddressNumber());
 				
@@ -4784,7 +4784,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
 										if("".equals(tasasRequeridas)) {
 											tasasRequeridas = "N/A";
 										}
-										return "El CFDI no cumple con los impuestos trasladados requeridos, favor de verificarlo con el comprador.<br />Código de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos trasladados que se requiren: " + tasasRequeridas + ".";
+										return "El CFDI no cumple con los impuestos trasladados requeridos, favor de verificarlo con el comprador.<br />CÃ³digo de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos trasladados que se requiren: " + tasasRequeridas + ".";
 									}
 								}					
 							}
@@ -4797,7 +4797,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
 										if("".equals(tasasRequeridas)) {
 											tasasRequeridas = "N/A";
 										}
-										return "El CFDI contiene impuestos trasladados que no corresponden con el recibo, favor de verificarlo con el comprador.<br />Código de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos trasladados que se requiren: " + tasasRequeridas + ". Tasa no válida: " + transTaxValue + ".";
+										return "El CFDI contiene impuestos trasladados que no corresponden con el recibo, favor de verificarlo con el comprador.<br />CÃ³digo de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos trasladados que se requiren: " + tasasRequeridas + ". Tasa no vÃ¡lida: " + transTaxValue + ".";
 									}
 								}
 							}
@@ -4821,7 +4821,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
 										if("".equals(tasasRequeridas)) {
 											tasasRequeridas = "N/A";
 										}
-										return "El CFDI no cumple con los impuestos retenidos requeridos, favor de verificarlo con el comprador.<br />Código de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos retenidos que se requiren: " + tasasRequeridas + ".";
+										return "El CFDI no cumple con los impuestos retenidos requeridos, favor de verificarlo con el comprador.<br />CÃ³digo de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos retenidos que se requiren: " + tasasRequeridas + ".";
 									}
 								}
 							}
@@ -4834,19 +4834,19 @@ public List<UserDocumentDTO> getListFac(String modo) {
 										if("".equals(tasasRequeridas)) {
 											tasasRequeridas = "N/A";
 										}
-										return "El CFDI contiene impuestos retenidos que no corresponden con el recibo, favor de verificarlo con el comprador.<br />Código de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos retenidos que se requiren: " + tasasRequeridas + ". Tasa no válida: " + retTaxValue + ".";
+										return "El CFDI contiene impuestos retenidos que no corresponden con el recibo, favor de verificarlo con el comprador.<br />CÃ³digo de impuestos del recibo: " + receiptTaxCode + ". Tasas de impuestos retenidos que se requiren: " + tasasRequeridas + ". Tasa no vÃ¡lida: " + retTaxValue + ".";
 									}
 								}
 							}
 							
 						} else {
-							return "El recibo no cuenta con un código de impuestos válido, favor de verificarlo con el comprador.<br />Código de impuestos del recibo: " + receiptTaxCode;
+							return "El recibo no cuenta con un cÃ³digo de impuestos vÃ¡lido, favor de verificarlo con el comprador.<br />CÃ³digo de impuestos del recibo: " + receiptTaxCode;
 						}
 					} else {
-						return "El recibo no cuenta con un código de impuestos válido, favor de verificarlo con el comprador.";
+						return "El recibo no cuenta con un cÃ³digo de impuestos vÃ¡lido, favor de verificarlo con el comprador.";
 					}
 				}*/
-				//JSAAVEDRA: Fin de validación de impuestos
+				//JSAAVEDRA: Fin de validaciÃ³n de impuestos
 				
 				//Calcula montos de Recibos y de Retenciones
 				/*for(Receipt r :requestedReceiptList) {
@@ -4862,7 +4862,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
 				orderAmount = po.getOrderAmount();
 				foreignOrderAmount = po.getForeignAmount();
 				
-				//Validación de Retenciones
+				//ValidaciÃ³n de Retenciones
 				String tipoValidacion ="";
 				//DACG EVITAR VALIDACION
 				isRetainedValidationOn = false;
@@ -4907,7 +4907,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
 					}
 				}
 
-				//Validación de Montos
+				//ValidaciÃ³n de Montos
 				double totalImporteMayor = 0;
 				double totalImporteMenor = 0;
 				double invoiceTotalAmount = 0;
@@ -4958,7 +4958,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
 				
 				//JSAAVEDRA: Montos extra para Proveedores Hoteleros
 				/*if(isHotelSupplier) {
-					//Se suma monto misceláneo
+					//Se suma monto miscelÃ¡neo
 					invoiceAmount += miscellaneousAmount;
 					//Se suma impuesto ISH
 					if(inv.getTotalImpLocTraslados() > 0) {
@@ -4971,7 +4971,7 @@ public List<UserDocumentDTO> getListFac(String modo) {
 				invoiceAmount = invoiceAmount /100;
 				
 				if(totalImporteMayor < invoiceAmount || totalImporteMenor > invoiceAmount) {
-					return "El total de la factura " + currencyFormat.format(invoiceAmount) + " no coincide con el total de la orden de compra seleccionada " + currencyFormat.format(currentInvoiceAmount) + ". Tipo de validación:" + tipoValidacion;
+					return "El total de la factura " + currencyFormat.format(invoiceAmount) + " no coincide con el total de la orden de compra seleccionada " + currencyFormat.format(currentInvoiceAmount) + ". Tipo de validaciÃ³n:" + tipoValidacion;
 				}else {
 					
 					List<UDC> pmtTermsUdc = udcService.searchBySystem("PMTTERMS");
