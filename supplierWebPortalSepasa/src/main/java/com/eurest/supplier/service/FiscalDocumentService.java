@@ -2611,4 +2611,8 @@ public class FiscalDocumentService {
 		public FiscalDocuments getFiscalDocumentsByUuid(String uuid){
 			return fiscalDocumentDao.getFiscalDocumentsByUuid(uuid);
 		}
+		
+		public List<FiscalDocuments> getPaymentPendingFiscalDocuments(int start, int limit) {
+			return fiscalDocumentDao.getPaymentPendingFiscalDocuments(start, limit);
+		}
 }

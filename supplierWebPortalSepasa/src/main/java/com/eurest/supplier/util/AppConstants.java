@@ -318,7 +318,7 @@ public final class AppConstants {
     
     public static final String EMAIL_PAYMENT_RECEIPT_NOTIF = "SEPASA - Notificación de pago de factura. ";
     
-    public static final String EMAIL_PAYMENT_RECEIPT_NOTIF_CONTENT = "Estimado proveedor <br /><br /> A través de este medio le notificamos el pago de la siguiente factura: <br/><br /> Uuid: _UUID_ <br /> Recibo(GR) No.: _GR_ <br /> Orden de Compra No.: _PO_ <br /> Fecha de pago: _DATE_ <br /> Importe: _AMOUNT_<br />Id del pago: _PID_<br /> <br />  ";
+    public static final String EMAIL_PAYMENT_RECEIPT_NOTIF_CONTENT = "Estimado proveedor <br /><br /> A través de este medio le notificamos el pago de la siguiente factura: <br/><br />No. Factura: _VINV_<br />Orden de Compra No.: _PO_<br />Fecha de pago: _DATE_<br />Importe: _AMOUNT_<br />Id del pago: _PID_<br />Uuid: _UUID_<br /><br />";
     
     public static final String EMAIL_PAYMENT_NO_OC_NOTIF_CONTENT = "Estimado proveedor <br /><br /> A través de este medio le notificamos el pago de la siguiente factura: <br/><br /> Uuid: _UUID_ <br /> Fecha de pago: _DATE_ <br /> Importe: _AMOUNT_<br />Id del pago: _PID_<br /> <br />  ";
     

@@ -199,9 +199,22 @@ public class FiscalDocumentDao {
 			return null;
 		}
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<FiscalDocuments> getPaymentPendingFiscalDocuments(int start, int limit) {
+		Session session = this.sessionFactory.getCurrentSession();
+		Criteria criteria = session.createCriteria(FiscalDocuments.class);
+		criteria.add(Restrictions.isNotNull("uuidFactura"));
+		criteria.add(Restrictions.ne("uuidFactura", ""));
+		criteria.add(Restrictions.eq("status", AppConstants.FISCAL_DOC_APPROVED));
+		criteria.setFirstResult(start);
+		criteria.setMaxResults(limit);
+		List<FiscalDocuments> list = criteria.list();
+		return list;
+	}
 	
 	@SuppressWarnings("unchecked")
-	public List<FiscalDocuments> getPaymentPendingReceipts(int start, int limit) {
+	public List<FiscalDocuments> getPaymentPendingReceiptsSOC(int start, int limit) {
 		Session session = this.sessionFactory.getCurrentSession();
 		Criteria criteria = session.createCriteria(FiscalDocuments.class);
 		criteria.add(Restrictions.isNotNull("uuidFactura"));

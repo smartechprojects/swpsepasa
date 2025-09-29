@@ -112,10 +112,190 @@ public class JDERestService {
   private JavaMailSender mailSenderObj;
   
   private Logger log4j = Logger.getLogger(JDERestService.class);
-  
-//  @Scheduled(fixedDelay = 4200000, initialDelay = 3000)
+
+//	@Scheduled(fixedDelay = 4200000, initialDelay = 3000)
 //	@Scheduled(cron = "0 30 2 * * ?")
 	public void getOrderPayments() {
+		try {			
+			for(int i=0; i<=20; i++) {
+				int start = i*500;
+
+				List<FiscalDocuments> fdList = fiscalDocumentService.getPaymentPendingFiscalDocuments(start, 500);
+				List<FiscalDocuments> fdUpdateList = new ArrayList<FiscalDocuments>();
+				
+				if (fdList != null) {
+					if (fdList.size() > 0) {
+						IntegerListDTO idto = new IntegerListDTO();
+						List<String> uuidList = new ArrayList<String>();
+						for(FiscalDocuments fd : fdList) {
+							
+							String invNbr = "";
+							String folio = "";
+							if(fd.getFolio() != null && !"null".equals(fd.getFolio()) && !"NULL".equals(fd.getFolio()) ) {
+								folio = fd.getFolio();
+							}
+							
+							String serie = "";
+							if(fd.getSerie() != null && !"null".equals(fd.getSerie()) && !"NULL".equals(fd.getSerie()) ) {
+								serie = fd.getSerie();
+							}
+							
+							invNbr = serie + folio;
+							String tempUuid = String.format("%08d", fd.getOrderNumber()) + "_" + fd.getAddressNumber() + "_" + invNbr;
+							if(!uuidList.contains(tempUuid)) {
+								uuidList.add(tempUuid);
+							}
+							//uuidList.add(po.getUuid());
+						}
+						
+						if(uuidList.size() > 0) {
+							idto.setUuidList(uuidList);
+							ObjectMapper jsonMapper = new ObjectMapper();
+							String jsonInString = jsonMapper.writeValueAsString(idto);
+							System.out.println("jsonInString:"+jsonInString);
+							HttpHeaders httpHeaders = new HttpHeaders();
+							httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+							httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+			 				final String url = AppConstants.URL_HOST + "/supplierWebPortalRestHame/payments";
+							Map<String, String> params = new HashMap<String, String>();
+							HttpEntity<?> httpEntity = new HttpEntity<>(jsonInString, httpHeaders);
+							RestTemplate restTemplate = new RestTemplate();
+							ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.POST, httpEntity,String.class, params);
+							HttpStatus statusCode = responseEntity.getStatusCode();
+
+							if (statusCode.value() == 200) {
+								String body = responseEntity.getBody(); System.out.println("body:"+body);
+								if (body != null) {
+									ObjectMapper mapper = new ObjectMapper();
+									Receipt[] response = mapper.readValue(body, Receipt[].class);
+									List<Receipt> objList = Arrays.asList(response);
+									
+									if (!objList.isEmpty()) {
+										DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");   
+	 	 	 					        NumberFormat format = NumberFormat.getCurrencyInstance(Locale.getDefault());
+	 	 	 					        List<String> uuidAddList = new ArrayList<String>();
+	 	 	 					        List<Receipt> recUpdateList = new ArrayList<Receipt>();
+	 	 	 					        List<PurchaseOrder> poUpdateList = new ArrayList<PurchaseOrder>();
+	 	 	 					     
+	 	 	 					        for(Receipt o : objList) {//Lista de Pagos de JDE
+		 	 	 							for(FiscalDocuments fd : fdList) {
+		 	 	 								
+		 	 	 								String invNbr = "";
+		 	 	 								String folio = "";
+		 	 	 								if(fd.getFolio() != null && !"null".equals(fd.getFolio()) && !"NULL".equals(fd.getFolio()) ) {
+		 	 	 									folio = fd.getFolio();
+		 	 	 								}
+		 	 	 								
+		 	 	 								String serie = "";
+		 	 	 								if(fd.getSerie() != null && !"null".equals(fd.getSerie()) && !"NULL".equals(fd.getSerie()) ) {
+		 	 	 									serie = fd.getSerie();
+		 	 	 								}
+		 	 	 								
+		 	 	 								invNbr = serie + folio;
+		 	 	 								
+												if(o.getAddressNumber().equals(fd.getAddressNumber())
+														&& o.getOrderNumber() == fd.getOrderNumber()
+														&& invNbr.equalsIgnoreCase(o.getUuid())) {
+													
+													//Agrega registros de Documentos Fiscales
+													fd.setPaymentAmount(o.getPaymentAmount());
+													fd.setPaymentDate(o.getPaymentDate());
+													fd.setPaymentReference(o.getPaymentReference());
+													fd.setPaymentStatus(AppConstants.STATUS_GR_PAID);
+													fd.setPaymentUploadDate(new Date());
+													fd.setStatus(AppConstants.STATUS_PAID);
+													fdUpdateList.add(fd);
+													
+													//Agrega registros de Ordenes de Compra y Recibos
+													if(fd.getUuidFactura() != null && !fd.getUuidFactura().trim().isEmpty()) {
+														String uuid = fd.getUuidFactura().trim();
+														if(!uuidAddList.contains(uuid)) {
+															uuidAddList.add(uuid);
+															List<Receipt> rList = purchaseOrderService.getReceiptsByUUID(uuid);
+															if(rList != null) {
+																for(Receipt r : rList) {
+																	r.setPaymentReference(o.getPaymentReference());
+																	r.setPaymentAmount(o.getPaymentAmount());
+																	r.setPaymentDate(o.getPaymentDate());
+																	recUpdateList.add(r);
+																}
+															}
+															
+															PurchaseOrder p = purchaseOrderService.searchbyOrderUuid(uuid);
+															p.setPaymentUploadDate(new Date());
+															p.setOrderStauts(AppConstants.STATUS_OC_PAID);
+															p.setRelatedStatus(AppConstants.STATUS_COMPLETE);
+															poUpdateList.add(p);
+														}
+													}
+													break;
+												}
+		 	 	 							}
+	 	 	 					        }
+	 	 	 					        
+	 	 	 					        //Actualiza Ordenes de Compra, Recibos y Documentos Fiscales
+										purchaseOrderService.updatePaymentReceiptsFD(fdUpdateList);
+										purchaseOrderService.updatePaymentReceipts(recUpdateList);
+										purchaseOrderService.updateMultiple(poUpdateList);
+	 	 	 					        
+										for (FiscalDocuments o : fdUpdateList) {
+											Supplier s = supplierService.searchByAddressNumber(o.getAddressNumber());
+											if(s!=null) {
+		 	 	 								String invNbr = "";
+		 	 	 								String folio = "";
+		 	 	 								if(o.getFolio() != null && !"null".equals(o.getFolio()) && !"NULL".equals(o.getFolio()) ) {
+		 	 	 									folio = o.getFolio();
+		 	 	 								}
+		 	 	 								
+		 	 	 								String serie = "";
+		 	 	 								if(o.getSerie() != null && !"null".equals(o.getSerie()) && !"NULL".equals(o.getSerie()) ) {
+		 	 	 									serie = o.getSerie();
+		 	 	 								}
+		 	 	 								
+		 	 	 								invNbr = serie + folio;
+		 	 	 								
+			 	 								String emailRecipient = (s.getEmailSupplier());
+			 	 	 							EmailServiceAsync emailAsyncSup = new EmailServiceAsync();
+			 	 	 							String emailContent = AppConstants.EMAIL_PAYMENT_RECEIPT_NOTIF_CONTENT;
+			 	 	 							emailContent = emailContent.replace("_VINV_", String.valueOf(invNbr));
+												String strDate = dateFormat.format(o.getPaymentDate()); 
+												emailContent = emailContent.replace("_PO_", String.valueOf(o.getOrderNumber()));
+												emailContent = emailContent.replace("_DATE_", strDate);
+
+			 	 	 							String currency = format.format(o.getPaymentAmount());
+			 	 	 							emailContent = emailContent.replace("_AMOUNT_", currency);
+			 	 	 							emailContent = emailContent.replace("_PID_", o.getPaymentReference());
+			 	 	 							emailContent = emailContent.replace("_UUID_", o.getUuidFactura());
+
+			 	 	 							emailAsyncSup.setProperties(
+			 	 	 									AppConstants.EMAIL_PAYMENT_RECEIPT_NOTIF,
+			 	 	 									stringUtils.prepareEmailContent(emailContent + AppConstants.EMAIL_PORTAL_LINK),emailRecipient);
+			 	 	 							emailAsyncSup.setMailSender(mailSenderObj);
+			 	 	 							emailAsyncSup.setAdditionalReference(udcDao, o.getOrderType());
+			 	 	 							Thread emailThreadSup = new Thread(emailAsyncSup);
+			 	 	 							emailThreadSup.start();
+			 								}											
+										}
+
+										log4j.info("Guardado:" + response.length);
+									}
+								}
+
+							}
+						}
+					}
+				}
+			}
+
+		} catch (Exception e) {
+			log4j.error("Exception" , e);
+			e.printStackTrace();
+		}
+	}
+	
+//  @Scheduled(fixedDelay = 4200000, initialDelay = 3000)
+//	@Scheduled(cron = "0 30 2 * * ?")
+	public void getOrderPaymentsOLD() {
 		try {			
 			for(int i=0; i<=20; i++) {
 				int start = i*500;

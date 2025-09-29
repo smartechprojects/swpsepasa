@@ -2283,9 +2283,9 @@ public class PurchaseOrderService {
 	public void deleteReceiptInvoice(ReceiptInvoice o) {
 		purchaseOrderDao.deleteReceiptInvoice(o);
 	}
-
+	
 	public List<FiscalDocuments> getPaymentPendingReceiptsSOC(int start, int limit) {
-		return fiscalDocumentDao.getPaymentPendingReceipts(start, limit);
+		return fiscalDocumentDao.getPaymentPendingReceiptsSOC(start, limit);
 	}
 
 	public void updatePaymentReceiptsFD(List<FiscalDocuments> list) {
