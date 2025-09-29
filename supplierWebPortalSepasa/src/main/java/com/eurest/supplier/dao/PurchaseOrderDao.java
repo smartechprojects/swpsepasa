@@ -544,17 +544,19 @@ public class PurchaseOrderDao {
 	}
 	
 	public void updateMultiple(List<PurchaseOrder> list) {
-		Session session = this.sessionFactory.getCurrentSession();
-		int i=0;
-		session.setCacheMode(CacheMode.IGNORE);
-		session.setFlushMode(FlushMode.COMMIT);
-		for(PurchaseOrder o : list) {
-		   session.saveOrUpdate(o);
-		   if( i % 50 == 0 ) {
-			      session.flush();
-			      session.clear();
-			   }
-		   i++; 
+		if(list != null) {
+			Session session = this.sessionFactory.getCurrentSession();
+			int i=0;
+			session.setCacheMode(CacheMode.IGNORE);
+			session.setFlushMode(FlushMode.COMMIT);
+			for(PurchaseOrder o : list) {
+				session.saveOrUpdate(o);
+				if( i % 50 == 0 ) {
+					session.flush();
+					session.clear();
+				}
+				i++;
+			}
 		}
 	}
 	

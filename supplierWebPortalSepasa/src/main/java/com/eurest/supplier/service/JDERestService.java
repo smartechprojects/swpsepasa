@@ -222,10 +222,12 @@ public class JDERestService {
 															}
 															
 															PurchaseOrder p = purchaseOrderService.searchbyOrderUuid(uuid);
-															p.setPaymentUploadDate(new Date());
-															p.setOrderStauts(AppConstants.STATUS_OC_PAID);
-															p.setRelatedStatus(AppConstants.STATUS_COMPLETE);
-															poUpdateList.add(p);
+															if(p != null) {
+																p.setPaymentUploadDate(new Date());
+																p.setOrderStauts(AppConstants.STATUS_OC_PAID);
+																p.setRelatedStatus(AppConstants.STATUS_COMPLETE);
+																poUpdateList.add(p);
+															}
 														}
 													}
 													break;
