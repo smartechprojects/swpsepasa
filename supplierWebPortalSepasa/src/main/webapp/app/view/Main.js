@@ -68,7 +68,7 @@ Ext.define('SupplierApp.view.Main', {
                 		"<tr>" +
                 		  "<td style='width:60%;'> " +
                 		     "<table height='70%' width='100%'>" +
-                		      "<tr><td style='width:200px;'> &nbsp;</td>" +
+                		      "<tr><td style='width:500px;'> &nbsp;</td>" +
                 		          "<td rowspan=2 style='font-size:26px;border-right:1px solid #333;color:#000;padding-bottom:7px;'>&nbsp;</td>" +
                 		          "<td  rowspan=2 style='width:700px;text-align:left;color:#000;font-size:17px;'>&nbsp;&nbsp; "  + displayName + " <br />&nbsp;&nbsp;<span style='font-size:14px;color:#666;'> " +SuppAppMsg.headerAccount + ":" + userName + "</span>" +
                 		          "<br />&nbsp;&nbsp;&nbsp;<span style='font-size:12px;color:red;font-weight:bold;'>" + approveNotif + "</span></td>" +

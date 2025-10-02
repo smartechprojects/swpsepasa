@@ -34,8 +34,8 @@ input, textarea, select { font-family:inherit; }
 	bottom: 20px;
 }
 .avatar img {
-	width: 250px;
-	height: 250px;
+	width: 340px;
+	height: 223px;
 	border-radius: 10px;
 	margin: auto;
 	border:3px solid #fff;
@@ -138,4 +138,9 @@ border:none;
 
 .newSupplierButton:hover {
 	background-color:#ddd;
+}
+
+.g-recaptcha {
+  margin: 0 auto;
+  display: table; /* otra forma simple de centrar en X */
 }

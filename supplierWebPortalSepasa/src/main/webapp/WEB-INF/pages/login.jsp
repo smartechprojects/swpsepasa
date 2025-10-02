@@ -87,7 +87,7 @@ th {
 <div id="loading" style="display:none;"></div>
     
 	<div class="wrap">
-  		<div style="margin-top:30px;text-align:center;font:30px Tahoma, Verdana, sans-serif;color:#333;">
+  		<div style="margin-top:30px;text-align:left;font:30px Tahoma, Verdana, sans-serif;color:#333;">
    			<p><img src="resources/images/hdr-logo.png"></p><br />
 		</div>
 		<div class="avatar">
@@ -157,7 +157,7 @@ th {
 
 
 	<div class="footer">
-	    &copy; 2000-2021 Smartech Consulting Group S.A. de C.V. Derechos Reservados.</div>
+	    &copy; 2000-2025 Smartech Consulting Group S.A. de C.V. Derechos Reservados.</div>
 
 </body>
 

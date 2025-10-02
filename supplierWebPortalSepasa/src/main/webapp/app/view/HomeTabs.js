@@ -735,13 +735,13 @@ Ext.define('SupplierApp.view.HomeTabs', {
     	   confNotif = ' <div style="text-align: justify; text-justify: inter-word;border:0px;padding:20px;"> ' +
            '<h2 style="text-align:center;">'+ SuppAppMsg.tabNoticePrivacy + '</h2>'+
            '<h2 style="text-align:center;"><a href="https://www.sepasa.com/es/politicas-de-privacidad" target="_blank""> ' + SuppAppMsg.tabNoticePrivacyMsg + '</a></h2>'+
-           '<div align="center"><IMG SRC="resources/images/Hame-logo.png" width="200" height="200" style="margin-top:15px;"></div>' +
+           '<div align="center"><IMG SRC="resources/images/Hame-logo.png" width="227" height="142" style="margin-top:15px;"></div>' +
 			' </div>';
        }else{ 
     	   confNotif = ' <div style="text-align: justify; text-justify: inter-word;border:0px;padding:20px;"> ' +
     		            '<h2 style="text-align:center;">'+ SuppAppMsg.tabNoticePrivacy + '</h2>'+
     		            '<h2 style="text-align:center;"><a href="https://www.sepasa.com/es/politicas-de-privacidad" target="_blank""> '+ SuppAppMsg.tabNoticePrivacyMsg + '</a></h2>'+
-    		            '<div align="center"><IMG SRC="resources/images/Hame-logo.png" width="200" height="200" style="margin-top:15px;"></div>' +
+    		            '<div align="center"><IMG SRC="resources/images/Hame-logo.png" width="227" height="142" style="margin-top:15px;"></div>' +
     		            /*
 						'“EL TRABAJADOR” reconoce que con motivo de su relación de trabajo con la “EMPRESA”'+
 						'y durante el desempeño de sus funciones tendrá acceso a información, materiales,'+
@@ -791,7 +791,7 @@ Ext.define('SupplierApp.view.HomeTabs', {
 			items : [{
 				xtype : 'panel',
 				title : SuppAppMsg.tabInicio,
-				html: "<IMG SRC='resources/images/Hame-logo.png' width='350' height='350' style='margin-top:30px;text-align:center;'><br /><br /><span style='font-size:16px;text-decoration: underline;' >" + welcomeMessage + "</span>",
+				html: "<IMG SRC='resources/images/Hame-logo.png' width='340' height='223' style='margin-top:60px;text-align:center;'><br /><br /><br /><br /><br /><br /><span style='font-size:16px;text-decoration: underline;' >" + welcomeMessage + "</span>",
 				bodyStyle:{"background-color":"#fff"}
 			    },{
 					xtype : 'tokenPanel',
