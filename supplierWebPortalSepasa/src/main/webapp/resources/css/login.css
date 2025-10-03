@@ -142,5 +142,10 @@ border:none;
 
 .g-recaptcha {
   margin: 0 auto;
-  display: table; /* otra forma simple de centrar en X */
+  display: table;
+}
+
+.forgetPass {
+  margin: 0 auto;
+  display: table;
 }
