@@ -125,7 +125,7 @@ input {
             		<tr> 
             		  <td style='width:60%;'>  
             		     <table height='50%' width='100%'> 
-            		      <tr><td style='width:200px;'> &nbsp;</td> 
+            		      <tr><td style='width:500px;'> &nbsp;</td> 
             		          <td rowspan=2 style='font-size:26px;border-right:1px solid #333;color:#000;padding-bottom:7px;'>&nbsp;</td> 
             		          <td  rowspan=2 style='width:700px;text-align:left;color:#B6985A;font-size:17px;'>&nbsp;&nbsp; 
             		          Bienvenido <br />&nbsp;&nbsp;&nbsp;<script  type="text/javascript"> document.write(displayName)</script>  </td> 
