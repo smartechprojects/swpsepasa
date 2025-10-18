@@ -2125,7 +2125,7 @@ public class PurchaseOrderService {
 					for(Receipt r : list) {
 						if (r.getFolio() != null && !"".equals(r.getFolio().trim())) {
 							//Si no se encontró la factura se coloca N/A
-							if(!(r.getEstPmtDate() != null && !"".equals(r.getEstPmtDateStr()))) {
+							if(!(r.getEstPmtDateStr() != null && !"".equals(r.getEstPmtDateStr()))) {
 								r.setEstPmtDateStr("N/A");
 							}
 						}
