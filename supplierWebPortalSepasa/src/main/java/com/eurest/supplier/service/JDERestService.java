@@ -38,7 +38,9 @@ import com.eurest.supplier.dao.UDCDao;
 import com.eurest.supplier.dto.AddressBookLayot;
 import com.eurest.supplier.dto.IntegerListDTO;
 import com.eurest.supplier.dto.InvoiceRequestDTO;
+import com.eurest.supplier.dto.OrderGridWrapper;
 import com.eurest.supplier.dto.PurchaseOrderDTO;
+import com.eurest.supplier.dto.PurchaseOrderGridDTO;
 import com.eurest.supplier.dto.SupplierDTO;
 import com.eurest.supplier.dto.UserDocumentDTO;
 import com.eurest.supplier.edi.BatchJournalDTO;
@@ -2538,5 +2540,48 @@ public int getAddressBookNextNumber() {
 	 		  log4j.info("================== Ends sendPendingReceipInvoice ==================");
 	 	  }
 
-	 
+	 	  public List<PurchaseOrderGridDTO> getEstPmtDate(List<PurchaseOrderGridDTO> o) {
+	 			try {
+	 				if (o != null) {
+	 					OrderGridWrapper wrapper = new OrderGridWrapper();
+	 					wrapper.setOrders(o);
+	 					ObjectMapper jsonMapper = new ObjectMapper();
+	 					String jsonInString = jsonMapper.writeValueAsString(wrapper);
+	 					
+	 					HttpHeaders httpHeaders = new HttpHeaders();
+	 					httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+	 					httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+	 					final String url = AppConstants.URL_HOST + "/supplierWebPortalRestHame/getEstPmtDate";
+	 					Map<String, String> params = new HashMap<String, String>();
+	 					HttpEntity<?> httpEntity = new HttpEntity<>(jsonInString, httpHeaders);
+	 					RestTemplate restTemplate = new RestTemplate();
+	 					restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
+	 					
+	 					ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.POST, httpEntity,
+	 							String.class, params);
+	 					HttpStatus statusCode = responseEntity.getStatusCode();
+
+	 					if (statusCode.value() == 200) {
+	 	 					String body = responseEntity.getBody();
+	 	 					if (body != null) {
+	 	 						ObjectMapper mapper = new ObjectMapper();
+	 	 						PurchaseOrderGridDTO[] response = mapper.readValue(body, PurchaseOrderGridDTO[].class);
+	 	 						List<PurchaseOrderGridDTO> objList = Arrays.asList(response);
+	 	 						if (!objList.isEmpty()) {
+	 	 							return objList;
+	 	 						}
+	 	 					}
+	 	 				}else {
+	 						return null;
+	 					}
+	 				}
+	 				return null;
+	 			} catch (Exception e) {
+	 				log4j.error("Exception" , e);
+	 				e.printStackTrace();
+	 				return null;
+	 			}
+	 	  }
+	 	  
+	 	  
 }

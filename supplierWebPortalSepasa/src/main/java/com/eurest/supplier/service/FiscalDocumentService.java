@@ -1821,14 +1821,14 @@ public class FiscalDocumentService {
 								//-------------------------------------------------------
 								//Actualizar Registros de Orden de Compra y Recibos
 								//-------------------------------------------------------
-								//Fecha de Vencimiento
-								Date estimatedPaymentDate = documentsService.getEstimatedPaymentDate(s);
-					        	po.setEstimatedPaymentDate(estimatedPaymentDate);
+								//Fecha de Vencimiento JSC: A solicitud de SEPASA, se tomará de JDE en línea.
+								//Date estimatedPaymentDate = documentsService.getEstimatedPaymentDate(s);
+					        	//po.setEstimatedPaymentDate(estimatedPaymentDate);
 					        	po.setOrderStauts(AppConstants.STATUS_OC_INVOICED);								
 								purchaseOrderService.updateOrders(po);
 								
 								for(Receipt r :receiptList) {
-									r.setEstPmtDate(estimatedPaymentDate);
+									//r.setEstPmtDate(estimatedPaymentDate);
 									r.setStatus(AppConstants.STATUS_OC_INVOICED);
 								}
 								purchaseOrderService.updateReceipts(receiptList);
@@ -1885,8 +1885,10 @@ public class FiscalDocumentService {
 				    			EmailServiceAsync emailAsyncSup = new EmailServiceAsync();
 				    			emailAsyncSup.setProperties(AppConstants.EMAIL_INV_ACCEPT_SUP + po.getOrderNumber(),
 				    					this.stringUtils.prepareEmailContent(String.format(AppConstants.FISCAL_DOC_MAIL_MSJ_INVOICE_FOLIO,
-				    							new Object[] {o.getFolio(), o.getUuidFactura(), simpleDateFormatEPD.format(estimatedPaymentDate), completeNameUsr, AppConstants.EMAIL_PORTAL_LINK,
-				    									o.getFolio(), o.getUuidFactura(), simpleDateFormatEPD.format(estimatedPaymentDate), completeNameUsr, AppConstants.EMAIL_PORTAL_LINK})),
+				    							new Object[] {o.getFolio(), o.getUuidFactura(), completeNameUsr, AppConstants.EMAIL_PORTAL_LINK,
+				    									o.getFolio(), o.getUuidFactura(), completeNameUsr, AppConstants.EMAIL_PORTAL_LINK})),
+		    									//new Object[] {o.getFolio(), o.getUuidFactura(), simpleDateFormatEPD.format(estimatedPaymentDate), completeNameUsr, AppConstants.EMAIL_PORTAL_LINK,
+		    									//		o.getFolio(), o.getUuidFactura(), simpleDateFormatEPD.format(estimatedPaymentDate), completeNameUsr, AppConstants.EMAIL_PORTAL_LINK})),
 				    					s.getEmailSupplier());
 				    			emailAsyncSup.setMailSender(this.mailSenderObj);
 				    			Thread emailThreadSup = new Thread(emailAsyncSup);

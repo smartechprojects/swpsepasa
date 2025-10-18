@@ -744,20 +744,6 @@ public class PurchaseOrderController {
 		int total=0;
 		try{
 				list = purchaseOrderService.getOrderReceipts(orderNumber, addressBook, orderType, orderCompany);
-				if(list != null) {
-					for(Receipt r : list) {
-						if(r.getUuid() != null && !r.getUuid().trim().isEmpty()) {
-							List<UserDocument> docs = documentsService.searchCriteriaByUuidOnly(r.getUuid().trim());
-							if(docs != null) {
-								for(UserDocument d : docs) {
-									//Campo nuevo
-									r.setUploadInvDate(d.getUploadDate());
-									break;
-								}	
-							}
-						}
-					}
-				}
 				total = list.size();
 				return mapReceiptOK(list, total);
 		        
@@ -808,20 +794,6 @@ public class PurchaseOrderController {
 		int total=0;
 		try{
 				list = purchaseOrderService.getNegativeOrderReceipts(orderNumber, addressBook, orderType, orderCompany);
-				if(list != null) {
-					for(Receipt r : list) {
-						if(r.getUuid() != null && !r.getUuid().trim().isEmpty()) {
-							List<UserDocument> docs = documentsService.searchCriteriaByUuidOnly(r.getUuid().trim());
-							if(docs != null) {
-								for(UserDocument d : docs) {
-									//Campo nuevo
-									r.setUploadInvDate(d.getUploadDate());
-									break;
-								}	
-							}
-						}
-					}
-				}
 				total = list.size();
 				return mapReceiptOK(list, total);
 		        

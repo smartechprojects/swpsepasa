@@ -654,8 +654,11 @@ public final class AppConstants {
     public static final String FISCAL_DOC_MAIL_MSJ_FAC_PROV = "Estimado proveedor:<br />Su factura con folio %s y UUID %s ha sido recibida y será sometida a revisión. En cuanto su factura sea aprobada le estará llegando una nueva notificación de dicha aprobación.<br /><br />%s"
     									+ "<br /><br />---<br />Dear supplier:<br />Your invoice with folio %s and UUID %s has been received and will be reviewed. As soon as your invoice is approved, you will receive a new notification of said approval.<br /><br />%s";
     
-    public static final String FISCAL_DOC_MAIL_MSJ_INVOICE_FOLIO = "Estimado proveedor:<br />Su factura con folio %s y UUID %s fue aprobada y será pagada de acuerdo a sus condiciones de crédito.<br />Fecha Estimada de Pago (Día-Mes-Año): %s<br /><br />Aprobador: %s<br /><br />%s"
-			+ "<br /><br />---<br />Dear supplier:<br />Your invoice with folio %s and UUID %s was approved and will be paid according to your credit conditions.<br />Estimated Payment Date (Day-Month-Year): %s<br /><br />Approver: %s<br /><br />%s";
+    public static final String FISCAL_DOC_MAIL_MSJ_INVOICE_FOLIO = "Estimado proveedor:<br />Su factura con folio %s y UUID %s fue aprobada y será pagada de acuerdo a sus condiciones de crédito.<br /><br />Aprobador: %s<br /><br />%s"
+			+ "<br /><br />---<br />Dear supplier:<br />Your invoice with folio %s and UUID %s was approved and will be paid according to your credit conditions.<br /><br />Approver: %s<br /><br />%s";
+    
+//    public static final String FISCAL_DOC_MAIL_MSJ_INVOICE_FOLIO = "Estimado proveedor:<br />Su factura con folio %s y UUID %s fue aprobada y será pagada de acuerdo a sus condiciones de crédito.<br />Fecha Estimada de Pago (Día-Mes-Año): %s<br /><br />Aprobador: %s<br /><br />%s"
+//			+ "<br /><br />---<br />Dear supplier:<br />Your invoice with folio %s and UUID %s was approved and will be paid according to your credit conditions.<br />Estimated Payment Date (Day-Month-Year): %s<br /><br />Approver: %s<br /><br />%s";
     
     public static final String EMAIL_INVOICE_REJECTED_NOTIF_FOLIO = "Estimado proveedor:<br />Su factura ha sido RECHAZADA. El folio de la factura rechazada es: %s con uuid: %s<br /><br />Rechaza: %s<br />Notas:<br />%s<br /><br />%s"
 			 + "<br /><br />---<br />Dear supplier:<br />Your invoice has been REJECTED. The folio of the rejected invoice is: %s with uuid: %s<br /><br />Rejects: %s<br />Notes:<br />%s<br /><br />%s";

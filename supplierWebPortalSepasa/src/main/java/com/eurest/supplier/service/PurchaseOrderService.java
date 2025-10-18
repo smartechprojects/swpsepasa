@@ -45,6 +45,7 @@ import com.eurest.supplier.dto.ForeingInvoice;
 import com.eurest.supplier.dto.InvoiceCodesDTO;
 import com.eurest.supplier.dto.InvoiceDTO;
 import com.eurest.supplier.dto.PurchaseOrderDTO;
+import com.eurest.supplier.dto.PurchaseOrderGridDTO;
 import com.eurest.supplier.invoiceXml.Concepto;
 import com.eurest.supplier.model.CodigosSAT;
 import com.eurest.supplier.model.ExchangeRate;
@@ -127,6 +128,9 @@ public class PurchaseOrderService {
 	@Autowired
 	DataAuditService dataAuditService;
 	
+	@Autowired
+	JDERestService jdeRestService;
+	  
 	static String TIMESTAMP_DATE_PATTERN = "yyyy-MM-dd";
 	static String TIMESTAMP_DATE_PATTERN_NEW = "yyyy-MM-dd HH:mm:ss";
 	static String DATE_PATTERN = "dd/MM/yyyy";	
@@ -1072,7 +1076,7 @@ public class PurchaseOrderService {
 			        po.setOrderStauts(AppConstants.STATUS_OC_INVOICED);
 			        po.setInvoiceUploadDate(invDate);
 			        po.setSentToWns(null);
-			        po.setEstimatedPaymentDate(estimatedPaymentDate);			        
+			        //po.setEstimatedPaymentDate(estimatedPaymentDate);			        
 			        purchaseOrderDao.updateOrders(po);
 			        
 			        for(Receipt r :requestedReceiptList) {
@@ -1080,7 +1084,7 @@ public class PurchaseOrderService {
 			        	r.setFolio(inv.getInvoiceNumber());
 			        	r.setSerie("");
 			        	r.setUuid(uuid);
-			        	r.setEstPmtDate(estimatedPaymentDate);
+			        	//r.setEstPmtDate(estimatedPaymentDate);
 						r.setStatus(AppConstants.STATUS_OC_INVOICED);
 						r.setUploadInvDate(new Date());
 						documentNumber = documentNumber + r.getDocumentNumber() + ",";
@@ -1438,7 +1442,7 @@ public class PurchaseOrderService {
 			        po.setOrderStauts(AppConstants.STATUS_OC_INVOICED);
 			        po.setInvoiceUploadDate(invDate);
 			        po.setSentToWns(null);
-			        po.setEstimatedPaymentDate(estimatedPaymentDate);			        
+			        //po.setEstimatedPaymentDate(estimatedPaymentDate);			        
 			        purchaseOrderDao.updateOrders(po);
 			        
 			        for(Receipt r :requestedReceiptList) {
@@ -1446,7 +1450,7 @@ public class PurchaseOrderService {
 			        	r.setFolio(inv.getInvoiceNumber());
 			        	r.setSerie("");
 			        	r.setUuid(uuid);
-			        	r.setEstPmtDate(estimatedPaymentDate);
+			        	//r.setEstPmtDate(estimatedPaymentDate);
 			        	r.setUploadInvDate(new Date());
 						r.setStatus(AppConstants.STATUS_OC_INVOICED);
 						documentNumber = documentNumber + r.getDocumentNumber() + ",";
@@ -1739,7 +1743,7 @@ public class PurchaseOrderService {
 				estimatedPaymentDate = c.getTime();
 			}
         	
-			fiscalDoc.setEstimatedPaymentDate(estimatedPaymentDate);
+			//fiscalDoc.setEstimatedPaymentDate(estimatedPaymentDate);
 			fiscalDoc.setInvoiceDate(fechaFacturaNueva);
 			fiscalDoc.setCurrencyCode(invCurrency);
 			fiscalDoc.setCurrencyMode(AppConstants.CURRENCY_MODE_FOREIGN);
@@ -2078,7 +2082,61 @@ public class PurchaseOrderService {
 	}
 	
 	public List<Receipt> getOrderReceipts(int orderNumber,String addressBook, String orderType, String orderCompany) {
-		return purchaseOrderDao.getOrderReceipts(orderNumber, addressBook, orderType, orderCompany);
+		
+		List<Receipt> list = purchaseOrderDao.getOrderReceipts(orderNumber, addressBook, orderType, orderCompany);
+		try {
+			//Se busca la Fecha Estimada de Pago en JDE
+			if(list != null && !list.isEmpty()) {
+				SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+				List<PurchaseOrderGridDTO> listDTO = new ArrayList<PurchaseOrderGridDTO>();
+				for(Receipt r : list) {
+					if (r.getFolio() != null && !"".equals(r.getFolio().trim())) {
+						PurchaseOrderGridDTO dto = new PurchaseOrderGridDTO();
+						dto.setAddressNumber(r.getAddressNumber());
+						dto.setOrderNumber(String.valueOf(r.getOrderNumber()));
+						dto.setOrderType(r.getOrderType());
+						dto.setOrderCompany(r.getOrderCompany());
+						dto.setInvoiceNumber(r.getFolio());
+						listDTO.add(dto);	
+					}
+				}
+				
+				if(listDTO != null && !listDTO.isEmpty()) {
+					List<PurchaseOrderGridDTO> respJDE = jdeRestService.getEstPmtDate(listDTO);						
+					if (respJDE != null && !respJDE.isEmpty()) {
+						for(Receipt r : list) {
+							for (PurchaseOrderGridDTO o : respJDE) {
+								if (r.getFolio() != null && !"".equals(r.getFolio().trim())
+										&& o.getAddressNumber().equals(r.getAddressNumber())
+										&& o.getOrderNumber().equals(String.valueOf(r.getOrderNumber()))
+										&& o.getOrderType().equals(r.getOrderType())
+										&& o.getOrderCompany().equals(r.getOrderCompany())
+										&& o.getInvoiceNumber().trim().equals(r.getFolio().trim())
+										&& o.getEstPmtDateInt2() > 0) {
+									
+									//Setea la fecha a partir de la fecha Juliana (Se convierte la fecha del lado del Portal)
+									r.setEstPmtDateStr(sdf.format(JdeJavaJulianDateTools.Methods.JulianDateToJavaDate(String.valueOf(o.getEstPmtDateInt2()))));
+									break;
+								}
+							}	
+						}
+					}
+					
+					for(Receipt r : list) {
+						if (r.getFolio() != null && !"".equals(r.getFolio().trim())) {
+							//Si no se encontró la factura se coloca N/A
+							if(!(r.getEstPmtDate() != null && !"".equals(r.getEstPmtDateStr()))) {
+								r.setEstPmtDateStr("N/A");
+							}
+						}
+					}
+				}
+			}				
+		} catch (Exception e) {
+			log4j.error("Exception" , e);
+			e.printStackTrace();
+		}
+		return list;
 	}
 	
 	public List<Receipt> getComplPendingReceipts(String addressBook) {
@@ -2101,37 +2159,6 @@ public class PurchaseOrderService {
 		for (Map.Entry<String, Receipt> entry : rm.entrySet()) {
 			returnList.add(entry.getValue());
 		}
-		
-		/*
-		for (Map.Entry<String, Receipt> entry : rm.entrySet()) {
-			//Las facturas con método de pago PUE quedan excentas de esta lista de complementos de pagos pendientes.
-			if(entry.getValue().getUuid() != null && !entry.getValue().getUuid().isEmpty()){
-				boolean isExemptMethod = false;				
-				List<UserDocument> docs = documentsService.searchCriteriaByRefFiscal(addressBook, entry.getValue().getUuid());				
-				if(docs != null && !docs.isEmpty()) {					
-					for(UserDocument doc : docs) {
-						try {
-							if(AppConstants.INVOICE_FIELD.equals(doc.getFiscalType()) && "text/xml".equals(doc.getType())) {
-								String xmlContent = new String(doc.getContent(), StandardCharsets.UTF_8);
-					        	InvoiceDTO inv = documentsService.getInvoiceXmlFromString(xmlContent);
-					        	if(AppConstants.FACTURA_PUE.equals(inv.getMetodoPago())) {
-					        		isExemptMethod = true;
-					        		break;
-					        	}
-							}	
-						} catch (Exception e) {
-							log4j.error("Exception" , e);
-							e.printStackTrace();
-						}
-					}	
-				}
-				if(isExemptMethod) {
-					continue;
-				}
-			}
-			returnList.add(entry.getValue());
-		}
-		*/
 
 		return returnList;
 	}

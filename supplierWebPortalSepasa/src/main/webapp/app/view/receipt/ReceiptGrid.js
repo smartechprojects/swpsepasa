@@ -130,6 +130,7 @@ Ext.define('SupplierApp.view.receipt.ReceiptGrid' ,{
             text     : SuppAppMsg.receiptTitle5,
             dataIndex: 'estPmtDate',
             width: 110,
+            hidden: true,
 			renderer: function(value, metaData, record, row, col, store, gridView){
 				if(value) {
 					return Ext.util.Format.date(new Date(value), 'd-m-Y');
@@ -137,6 +138,10 @@ Ext.define('SupplierApp.view.receipt.ReceiptGrid' ,{
 					return null;
 				}
 			}
+        },{
+            text     : SuppAppMsg.receiptTitle5,
+            dataIndex: 'estPmtDateStr',
+            width: 110
         },{
             text     : SuppAppMsg.receiptTitle9,
             dataIndex: 'paymentDate',

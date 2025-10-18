@@ -11,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.codehaus.jackson.annotate.JsonAutoDetect;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -63,7 +64,9 @@ public class Receipt implements Serializable {
 	private Date invDate;
 	
 	private int receiptLine;	
-	private Date estPmtDate;	
+	private Date estPmtDate;
+	@Transient
+	private String estPmtDateStr;
 	private String remark;	
 	private String paymentStatus;
 	private Date paymentDate;
@@ -254,6 +257,12 @@ public class Receipt implements Serializable {
 	}
 	public void setEstPmtDate(Date estPmtDate) {
 		this.estPmtDate = estPmtDate;
+	}
+	public String getEstPmtDateStr() {
+		return estPmtDateStr;
+	}
+	public void setEstPmtDateStr(String estPmtDateStr) {
+		this.estPmtDateStr = estPmtDateStr;
 	}
 	public String getRemark() {
 		return remark;
