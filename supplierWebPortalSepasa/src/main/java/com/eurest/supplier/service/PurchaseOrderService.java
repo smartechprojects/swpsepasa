@@ -2118,20 +2118,35 @@ public class PurchaseOrderService {
 					List<PurchaseOrderGridDTO> respJDE = jdeRestService.getEstPmtDate(listDTO);						
 					if (respJDE != null && !respJDE.isEmpty()) {
 						for(Receipt r : list) {
-							for (PurchaseOrderGridDTO o : respJDE) {
-								if (r.getFolio() != null && !"".equals(r.getFolio().trim())
-										&& o.getAddressNumber().equals(r.getAddressNumber())
-										&& o.getOrderNumber().equals(String.valueOf(r.getOrderNumber()))
-										&& o.getOrderType().equals(r.getOrderType())
-										&& o.getOrderCompany().equals(r.getOrderCompany())
-										&& o.getInvoiceNumber().trim().equals(r.getFolio().trim())
-										&& o.getEstPmtDateInt2() > 0) {
-									
-									//Setea la fecha a partir de la fecha Juliana (Se convierte la fecha del lado del Portal)
-									r.setEstPmtDateStr(sdf.format(JdeJavaJulianDateTools.Methods.JulianDateToJavaDate(String.valueOf(o.getEstPmtDateInt2()))));
-									break;
+							if (r.getFolio() != null && !"".equals(r.getFolio().trim())) {
+								
+								String invNbr = "";						
+								String folio = "";						
+								if(r.getFolio() != null && !"null".equals(r.getFolio()) && !"NULL".equals(r.getFolio()) ) {
+									folio = r.getFolio();
 								}
-							}	
+								
+								String serie = "";
+								if(r.getSerie() != null && !"null".equals(r.getSerie()) && !"NULL".equals(r.getSerie()) ) {
+									serie = r.getSerie();
+								}
+								
+								invNbr = serie + folio;
+								
+								for (PurchaseOrderGridDTO o : respJDE) {
+									if (o.getAddressNumber().equals(r.getAddressNumber())
+											&& o.getOrderNumber().equals(String.valueOf(r.getOrderNumber()))
+											&& o.getOrderType().equals(r.getOrderType())
+											&& o.getOrderCompany().equals(r.getOrderCompany())
+											&& o.getInvoiceNumber().trim().equals(invNbr)
+											&& o.getEstPmtDateInt2() > 0) {
+										
+										//Setea la fecha a partir de la fecha Juliana (Se convierte la fecha del lado del Portal)
+										r.setEstPmtDateStr(sdf.format(JdeJavaJulianDateTools.Methods.JulianDateToJavaDate(String.valueOf(o.getEstPmtDateInt2()))));
+										break;
+									}
+								}
+							}
 						}
 					}
 					

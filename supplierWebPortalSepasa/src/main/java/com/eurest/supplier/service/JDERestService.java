@@ -2576,6 +2576,11 @@ public int getAddressBookNextNumber() {
 	 					}
 	 				}
 	 				return null;
+	 			} catch (HttpServerErrorException e) {
+	 			    System.err.println("HTTP Status: " + e.getStatusCode());
+	 			    System.err.println("Response Body: " + e.getResponseBodyAsString());
+	 				e.printStackTrace();
+	 				return null;
 	 			} catch (Exception e) {
 	 				log4j.error("Exception" , e);
 	 				e.printStackTrace();
