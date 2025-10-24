@@ -2091,13 +2091,26 @@ public class PurchaseOrderService {
 				List<PurchaseOrderGridDTO> listDTO = new ArrayList<PurchaseOrderGridDTO>();
 				for(Receipt r : list) {
 					if (r.getFolio() != null && !"".equals(r.getFolio().trim())) {
+						
+						String invNbr = "";						
+						String folio = "";						
+						if(r.getFolio() != null && !"null".equals(r.getFolio()) && !"NULL".equals(r.getFolio()) ) {
+							folio = r.getFolio();
+						}
+						
+						String serie = "";
+						if(r.getSerie() != null && !"null".equals(r.getSerie()) && !"NULL".equals(r.getSerie()) ) {
+							serie = r.getSerie();
+						}
+						
+						invNbr = serie + folio;						
 						PurchaseOrderGridDTO dto = new PurchaseOrderGridDTO();
 						dto.setAddressNumber(r.getAddressNumber());
 						dto.setOrderNumber(String.valueOf(r.getOrderNumber()));
 						dto.setOrderType(r.getOrderType());
 						dto.setOrderCompany(r.getOrderCompany());
-						dto.setInvoiceNumber(r.getFolio());
-						listDTO.add(dto);	
+						dto.setInvoiceNumber(invNbr);
+						listDTO.add(dto);
 					}
 				}
 				
