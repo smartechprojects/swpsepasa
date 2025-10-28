@@ -397,7 +397,7 @@ Ext.define('SupplierApp.view.supplier.SupplierForm', {
 										}
 									},
 									allowBlank:false,
-									readOnly:role=='ANONYMOUS'?false:true,
+									readOnly:role=='ANONYMOUS' || role=='ROLE_SUPPLIER' ?false:true,
 									/*regex: /[A-Za-z]/,
 									regexText: " ",
 									validator: function(v) {
@@ -426,7 +426,7 @@ Ext.define('SupplierApp.view.supplier.SupplierForm', {
 										}
 									},
 									allowBlank:false,
-									readOnly:role=='ANONYMOUS'?false:true,
+									readOnly:role=='ANONYMOUS' || role=='ROLE_SUPPLIER' ?false:true,
 									/*regex: /[A-Za-z]/,
 									regexText: " ",
 									validator: function(v) {
