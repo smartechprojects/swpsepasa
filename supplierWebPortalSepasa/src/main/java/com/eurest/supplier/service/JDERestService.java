@@ -935,6 +935,7 @@ public class JDERestService {
  								}
  								log4j.info("OC Registradas: " + String.join(", ", poNumberList)  + ".");
  							}
+ 							/*JSC: Se comenta la notificación de OC en acuerdo con Cristian. 29/10/2025 
  							for(PurchaseOrder o : returnedList) {
  								Supplier s = supplierService.searchByAddressNumber(o.getAddressNumber());
  								if(s!=null) {	
@@ -945,14 +946,14 @@ public class JDERestService {
 	 	 									stringUtils.prepareEmailContent(AppConstants.EMAIL_PURCHASE_NEW2 + o.getOrderNumber() + "-"
 	 	 											+ o.getOrderType() + "<br /><br />" + AppConstants.EMAIL_PORTAL_LINK + "<br /><br />"
 	 	 											+ "Cuenta: " + o.getAddressNumber() + "<br /> Razon Social: " + s.getRazonSocial()),
-	 	 									emailRecipient + "," + o.getEmail());
+	 	 									emailRecipient);
 	 	 							emailAsyncSup.setMailSender(mailSenderObj);
 	 	 							emailAsyncSup.setAdditionalReference(udcDao, o.getOrderType());
 	 	 							Thread emailThreadSup = new Thread(emailAsyncSup);
 	 	 							emailThreadSup.start();
  								}
  							}
-
+ 							*/
  							//log4j.info("Procesado:" + response.length);
  						}
  					}
