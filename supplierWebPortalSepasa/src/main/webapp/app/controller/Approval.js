@@ -128,7 +128,7 @@ Ext.define('SupplierApp.controller.Approval', {
 					});
 			    	
 			    	dlgAccept.textArea.inputEl.set({
-					    maxLength: 255
+					    maxLength: 1999
 					});
 			    	
 					
@@ -212,7 +212,7 @@ Ext.define('SupplierApp.controller.Approval', {
 		});
     	
     	dlgRejected.textArea.inputEl.set({
-		    maxLength: 255
+		    maxLength: 1999
 		});
     	
     },
