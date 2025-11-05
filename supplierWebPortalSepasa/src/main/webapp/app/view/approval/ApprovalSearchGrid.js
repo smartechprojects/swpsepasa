@@ -110,10 +110,33 @@ Ext.define('SupplierApp.view.approval.ApprovalSearchGrid' ,{
 	            dataIndex: 'fechaSolicitud',
 	            renderer : Ext.util.Format.dateRenderer("d-m-Y")
 	       },{
+	            xtype: 'actioncolumn', 
+	            width: 60,
+	            header: SuppAppMsg.purchaseTitle30,
+	            align: 'center',
+				name : 'openAppNotes',
+				itemId : 'openAppNotes',
+	            style: 'text-align:center;',
+	            items: [
+	            	{
+	            	icon:'resources/images/notepad.png',
+	          	     iconCls: 'increaseSize',
+	            	  getClass: function(v, metadata, r, rowIndex, colIndex, store) {
+	              		  if((r.data.approvalNotes == null || r.data.approvalNotes == '') &&
+	              			(r.data.rejectNotes == null || r.data.rejectNotes == '')) {
+	        	              return "x-hide-display";
+	        	          }else{
+	        	        	  return "increaseSize";
+	        	          }
+	              	  },
+	                  handler: function(grid, rowIndex, colIndex) {
+	                  	this.fireEvent('buttonclick', grid, rowIndex, colIndex);
+	             }}]
+	        }/*,{
 	            text     : SuppAppMsg.purchaseTitle30,
 	            width: 300,
 	            dataIndex: 'approvalNotes'
-	       },{
+	       }*/,{
 	        	xtype: 'actioncolumn', 
 	        	hidden:role=='ROLE_ADMIN'?false:true,
 	            width: 90,

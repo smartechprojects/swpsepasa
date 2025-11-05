@@ -33,8 +33,34 @@ Ext.define('SupplierApp.controller.Approval', {
 				},
 				'approvalSearchGrid button[action=searchAppSupplier]' : {
 					click : this.searchAppSupplier
-				}
+				},
+				'#openAppNotes' : {
+					"buttonclick" : this.openAppNotes
+				},
 				});
+    },
+    
+    openAppNotes : function(grid, rowIndex, colIndex, record) {
+    	var me = this;
+    	var record = grid.store.getAt(rowIndex);
+    	
+     	var notesWindow = new Ext.Window({
+    		layout : 'fit',
+    		title : 'Notas aprobacion y rechazo',
+    		width : 600,
+    		height : 260,
+    		modal : true,
+    		closeAction : 'destroy',
+    		resizable : false,
+    		minimizable : false,
+    		maximizable : false,
+    		autoScroll: true,
+    		plain : true,
+    		html: SuppAppMsg.approvalApprove + '<br><br>' + record.data.approvalNotes + '<br><br>' +
+    				SuppAppMsg.approvalReject + '<br><br>' + record.data.rejectNotes
+    	});
+     	
+     	notesWindow.show();
     },
     
     approveSupplier : function(grid, rowIndex, colIndex, record) {
