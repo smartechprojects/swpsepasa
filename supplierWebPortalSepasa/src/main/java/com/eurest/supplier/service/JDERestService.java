@@ -843,7 +843,7 @@ public class JDERestService {
  	}
 	
 	//@Scheduled(fixedDelay = 9920000, initialDelay = 3000)
-	//@Scheduled(cron = "0 0 7,10,13,16,19 * * ?")
+	//@Scheduled(cron = "0 0 14,18,22 * * ?")
  	public void getPurchaseOrderList() {
 		log4j.info("Carga órdenes: " + new Date());
  		try {
