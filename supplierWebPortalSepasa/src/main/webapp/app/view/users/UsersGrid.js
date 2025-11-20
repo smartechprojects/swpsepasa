@@ -45,14 +45,17 @@ Ext.define('SupplierApp.view.users.UsersGrid', {
 			dataIndex : 'enabled'
 		},{
 			hidden:true,
+			hideable: false,
 			width : 50,
 			dataIndex : 'openOrders'
 		},{
 			hidden:true,
+			hideable: false,
 			width : 50,
 			dataIndex : 'logged'
 		},{
 			hidden:true,
+			hideable: false,
 			width : 50,
 			dataIndex : 'agreementAccept'
 		}  ];

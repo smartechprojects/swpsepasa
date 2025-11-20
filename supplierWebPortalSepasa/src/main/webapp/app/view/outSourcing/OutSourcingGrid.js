@@ -74,8 +74,9 @@ Ext.define('SupplierApp.view.outSourcing.OutSourcingGrid' ,{
     	
         this.columns = [
        {
-                hidden:true,
-                dataIndex: 'id'
+            hidden:true,
+            dataIndex: 'id',
+            hideable: false,//Para que no aparezca en la lista de "Columnas"
        },{
             text     : 'Fecha de Carga',
             width: 110,
@@ -117,6 +118,7 @@ Ext.define('SupplierApp.view.outSourcing.OutSourcingGrid' ,{
             width: 220,
             dataIndex: 'name'
         },{
+        	text     : 'Abrir',
             width: 40,
             renderer: function (value, meta, record) {
             	var href = "supplier/openOSDocument.action?id=" + record.data.id;
@@ -130,7 +132,8 @@ Ext.define('SupplierApp.view.outSourcing.OutSourcingGrid' ,{
             text     : 'UUID',
             width: 100,
             hidden:true,
-            dataIndex: 'uuid'
+            dataIndex: 'uuid',
+            hideable: false,//Para que no aparezca en la lista de "Columnas"
         },{
             text     : 'Frecuencia',
             width: 100,
@@ -170,6 +173,7 @@ Ext.define('SupplierApp.view.outSourcing.OutSourcingGrid' ,{
 			name : 'openOSNotes',
 			itemId : 'openOSNotes',
             style: 'text-align:center;',
+            hideable: false,//Para que no aparezca en la lista de "Columnas"
             items: [
             	{
             	icon:'resources/images/notepad.png',
@@ -193,6 +197,7 @@ Ext.define('SupplierApp.view.outSourcing.OutSourcingGrid' ,{
 			name : 'rejectOSDoc',
 			itemId : 'rejectOSDoc',
             style: 'text-align:center;',
+            hideable: false,//Para que no aparezca en la lista de "Columnas"
             items: [
             	{
             	  icon:'resources/images/close.png',
@@ -215,6 +220,7 @@ Ext.define('SupplierApp.view.outSourcing.OutSourcingGrid' ,{
 			name : 'approveSODoc',
 			itemId : 'approveSODoc',
             style: 'text-align:center;',
+            hideable: false,//Para que no aparezca en la lista de "Columnas"
             items: [
             	{
             		icon:'resources/images/accept.png',
@@ -237,6 +243,7 @@ Ext.define('SupplierApp.view.outSourcing.OutSourcingGrid' ,{
 			name : 'uploadNewSODoc',
 			itemId : 'uploadNewSODoc',
             style: 'text-align:center;',
+            hideable: false,//Para que no aparezca en la lista de "Columnas"
             items: [
             	{
             	  icon:'resources/images/file.png',

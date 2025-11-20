@@ -90,7 +90,8 @@ Ext.define('SupplierApp.view.fiscalDocuments.FiscalDocumentsGrid' ,{
 			            text     : SuppAppMsg.suppliersNameSupplier,
 			            width: 230,
 			            dataIndex: 'supplierName',
-			            hidden: true
+			            hidden: true,
+			            hideable: false,//Para que no aparezca en la lista de "Columnas"
 			        },{
 			            text     : SuppAppMsg.fiscalTitle30,
 			            width: 90,
@@ -135,7 +136,8 @@ Ext.define('SupplierApp.view.fiscalDocuments.FiscalDocumentsGrid' ,{
 						align: 'center',
 			            dataIndex: 'conceptTotalAmount',
 			            renderer : Ext.util.Format.numberRenderer('0,0.00'),
-			            hidden: true
+			            hidden: true,
+			            hideable: false,//Para que no aparezca en la lista de "Columnas"
 			        },{
 			            text     : SuppAppMsg.fiscalTitle28,
 			            width: 100,
@@ -151,15 +153,7 @@ Ext.define('SupplierApp.view.fiscalDocuments.FiscalDocumentsGrid' ,{
 			            text     : SuppAppMsg.fiscalTitle5,
 			            width: 250,
 			            dataIndex: 'uuidFactura'
-			        },/*{
-			            text     : 'Uuid nota de credito',
-			            width: 250,
-			            dataIndex: 'uuidNotaCredito'
 			        },{
-			            text     : 'Status',
-			            width: 110,
-			            dataIndex: 'approvalStatus'
-			        },*/{
 			            text     : SuppAppMsg.fiscalTitle22,
 			            width: 110,
 			            dataIndex: 'status'
@@ -171,7 +165,8 @@ Ext.define('SupplierApp.view.fiscalDocuments.FiscalDocumentsGrid' ,{
 			            text     : SuppAppMsg.approvalCurrentApprover,
 			            width: 200,
 			            dataIndex: 'currentApprover',
-			            hidden: true
+			            hidden: true,
+			            hideable: false,//Para que no aparezca en la lista de "Columnas"
 			        },{
 			        	xtype: 'actioncolumn', 
 			            width: 90,
@@ -182,6 +177,7 @@ Ext.define('SupplierApp.view.fiscalDocuments.FiscalDocumentsGrid' ,{
 						hidden: role=='ROLE_ADMIN' || role == 'ROLE_PURCHASE' || role == 'ROLE_ADMIN_PURCHASE' || role=='ROLE_PURCHASE_IMPORT' ?false:true,
 						itemId : 'approveInvoiceFD',
 			            style: 'text-align:center;',
+			            hideable: false,//Para que no aparezca en la lista de "Columnas"
 			            items: [{
 			            	icon:'resources/images/accept.png',
 			            	getClass: function(v, metadata, r, rowIndex, colIndex, store) {
@@ -204,6 +200,7 @@ Ext.define('SupplierApp.view.fiscalDocuments.FiscalDocumentsGrid' ,{
 						itemId : 'rejectInvoiceFD',
 						id: 'rejectInvoiceFD',
 			            style: 'text-align:center;',
+			            hideable: false,//Para que no aparezca en la lista de "Columnas"
 			            items: [
 			            	{
 			            	icon:'resources/images/close.png',

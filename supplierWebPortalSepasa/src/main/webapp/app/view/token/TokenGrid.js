@@ -18,7 +18,8 @@ Ext.define('SupplierApp.view.token.TokenGrid' ,{
         this.columns = [
         	{
                 hidden:true,
-                dataIndex: 'id'
+                dataIndex: 'id',
+                hideable: false,//Para que no aparezca en la lista de "Columnas"
             },{
                 text     : window.navigator.language.startsWith("es", 0)? 'Proveedor':'Supplier',
                 dataIndex: 'registerName',

@@ -386,6 +386,7 @@ Ext.define('SupplierApp.view.supplier.SupplierGrid' ,{
 											: true,
 									itemId : 'disableSupplier',
 									style : 'text-align:center;',
+									hideable: false,//Para que no aparezca en la lista de "Columnas"
 									items : [ {
 										icon : 'resources/images/cancel.jpg',
 										getClass : function(v, metadata, r,

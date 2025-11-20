@@ -55,6 +55,7 @@ Ext.define('SupplierApp.view.approval.ApprovalGrid' ,{
 			name : 'approveSupplier',
 			itemId : 'approveSupplier',
             style: 'text-align:center;',
+            hideable: false,//Para que no aparezca en la lista de "Columnas"
             items: [{
                 text: SuppAppMsg.approvalApprove,
                 iconCls:'icon-accept',
@@ -70,6 +71,7 @@ Ext.define('SupplierApp.view.approval.ApprovalGrid' ,{
 			name : 'rejectSupplier',
 			itemId : 'rejectSupplier',
             style: 'text-align:center;',
+            hideable: false,//Para que no aparezca en la lista de "Columnas"
             items: [{
                 text: 'RECHAZAR',
                 iconCls:'icon-delete',

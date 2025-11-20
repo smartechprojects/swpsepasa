@@ -23,7 +23,7 @@ Ext.define('SupplierApp.view.receipt.ReceiptGrid' ,{
     selType: 'checkboxmodel',
 	cls: 'extra-large-cell-grid', 
     store:'Receipt',
-	scroll : false,
+	scroll : true,
 	viewConfig: {
 		stripeRows: true,
 		style : { overflow: 'auto', overflowX: 'hidden' }
@@ -32,19 +32,19 @@ Ext.define('SupplierApp.view.receipt.ReceiptGrid' ,{
     initComponent: function() {
  
         this.columns = [
-        	{
-                hidden:true,
-                dataIndex: 'id'
-            },{
-                text     : 'Sts',
-                dataIndex: 'paymentStatus',
-                width: 50
-            },{
-                text     : 'Sec',
-                dataIndex: 'receiptLine',
-                width: 60
-            },
-           {
+    	{
+            hidden:true,
+            dataIndex: 'id',
+            hideable: false,//Para que no aparezca en la lista de "Columnas"
+        },{
+            text     : 'Sts',
+            dataIndex: 'paymentStatus',
+            width: 50
+        },{
+            text     : 'Sec',
+            dataIndex: 'receiptLine',
+            width: 60
+        },{
             text     : SuppAppMsg.receiptTitle1,
             dataIndex: 'documentNumber',
             width: 90
@@ -131,6 +131,7 @@ Ext.define('SupplierApp.view.receipt.ReceiptGrid' ,{
             dataIndex: 'estPmtDate',
             width: 110,
             hidden: true,
+            hideable: false,//Para que no aparezca en la lista de "Columnas"
 			renderer: function(value, metaData, record, row, col, store, gridView){
 				if(value) {
 					return Ext.util.Format.date(new Date(value), 'd-m-Y');

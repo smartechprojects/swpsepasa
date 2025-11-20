@@ -115,12 +115,6 @@
             dataIndex: 'promiseDelivery',
             renderer : Ext.util.Format.dateRenderer("d-m-Y")
         },{
-            text     : 'Fecha estimada de recibo',
-            width: 150,
-            dataIndex: 'promiseDelivery',
-            renderer : Ext.util.Format.dateRenderer("d-m-Y"),
-            hidden:true
-        },{
             text     : SuppAppMsg.purchaseOrderÌmporteTotal,
             width: 110,
             dataIndex: 'orderAmount',
@@ -135,26 +129,6 @@
             text     : SuppAppMsg.purchaseOrderCurrency,
             width: 60,
             dataIndex: 'currecyCode'
-        },{
-            hidden:true,
-            dataIndex: 'invoiceUuid'
-        },{
-            hidden:true,
-            dataIndex: 'supplierEmail'
-        },{
-            hidden:true,
-            dataIndex: 'paymentUuid'
-        },{
-            hidden:true,
-            dataIndex: 'paymentType'
-        },{
-            hidden:true,
-            dataIndex: 'invoiceNumber'
-        },{
-            text     : 'Status',
-            width: 120,
-            dataIndex: 'orderStauts',
-            hidden:true
         },{
             align: 'left',
             text     : 'Status',
@@ -221,11 +195,6 @@
             	}
 
              }
-        },{
-            text     : 'Status de Factura',
-            width: 100,
-            dataIndex: 'status',
-            hidden:true
         },{
             text     : SuppAppMsg.purchaseOrderRecibosFacturas,
             align: 'center',
@@ -295,10 +264,12 @@
         	hidden:role=='ROLE_ADMIN' || role.includes('ROLE_SUPPLIER')?false:true,
         	width: 90,
             header: SuppAppMsg.approvalApprove,
+            columnHeaderText: SuppAppMsg.approvalApprove,
             align: 'center',
 			name : 'approveDoc',
 			itemId : 'approveDoc',
             style: 'text-align:center;',
+            hideable: false,
             items: [
             	{
             		icon:'resources/images/accept.png',
@@ -319,10 +290,12 @@
             hidden:role=='ROLE_ADMIN' || role.includes('ROLE_SUPPLIER')?false:true,            
         	width: 90,
             header: SuppAppMsg.approvalReject,
+            columnHeaderText: SuppAppMsg.approvalReject,
             align: 'center',
 			name : 'rejectDoc',
 			itemId : 'rejectDoc',
             style: 'text-align:center;',
+            hideable: false,
             items: [
             	{
             	  icon:'resources/images/close.png',
@@ -374,94 +347,6 @@
                 return ''; // Si no se cumplen las condiciones, dejar vacío  	
              }
         }
-        /*
-        ,{
-            align: 'center',
-            width: 140,
-            hidden:true,
-            renderer: function(value, meta, record) {
-	            	var id = Ext.id();
-	            	var status = {
-	            			STATUS_OC_REJECTED: 'OC RECHAZADA',
-	            			STATUS_OC_REQUESTED: 'OC SOLICITADA',	            			
-	            	        STATUS_OC_RECEIVED: 'OC RECIBIDA',
-	            	        STATUS_OC_APPROVED: 'OC APROBADA',
-	            	        STATUS_OC_SENT: 'OC ENVIADA',
-	            	        STATUS_OC_CLOSED: 'OC CERRADA',
-	            	        STATUS_OC_PENDING: 'OC PENDIENTE',
-	            	        STATUS_OC_INVOICED: 'OC FACTURADA',
-	            	        STATUS_OC_PROCESSED: 'OC PROCESADA',
-	            	        STATUS_OC_PAID: 'OC PAGADA',
-	            	        STATUS_OC_PAYMENT_COMPL: 'OC COMPLEMENTO',
-	            	        STATUS_OC_CANCEL: 'OC CANCELADA',
-	            	        STATUS_OC_OBSOLETA: 'OC OBSOLETA'
-	            	};
-	            	
-	            	var showButton = false;
-	            	
-	            	switch (record.data.orderStauts) {
-	            	  case status.STATUS_OC_REJECTED:
-		            		showButton = false;
-		            	    break;
-		              case status.STATUS_OC_REQUESTED:
-			            	showButton = false;
-			            	break;	            	
-	            	  case status.STATUS_OC_RECEIVED:
-	            		showButton = false;
-	            	    break;
-	            	  case status.STATUS_OC_APPROVED:
-		            	showButton = false;
-		            	break;
-	            	  case status.STATUS_OC_SENT:
-	            		showButton = false;
-	              	    break;
-	            	  case status.STATUS_OC_PENDING:
-	            		showButton = true;
-	            		break;
-	            	  case status.STATUS_OC_INVOICED:
-	            		showButton = true;
-	              	    break;
-	            	  case status.STATUS_OC_RECEIVED:
-	            		showButton = true;
-	              	    break;
-	            	  case status.STATUS_OC_PROCESSED:
-	            		  showButton = true;
-	              	    break;
-	            	  case status.STATUS_OC_PAID:
-	            		  showButton = true;
-	              	    break;
-	            	  case status.STATUS_OC_PAYMENT_COMPL:
-	            		  showButton = false;
-	              	    break;
-	            	  case status.STATUS_OC_CANCEL:
-	            		  showButton = false;
-	              	    break;
-	            	  case status.STATUS_OC_OBSOLETA:
-	            		  showButton = false;
-	              	  break;
-	              	  default:
-	              		break;
-	            	}
-	
-	            	if(role == 'ROLE_PURCHASE' || role == 'ROLE_ADMIN_PURCHASE' || role=='ROLE_PURCHASE_IMPORT' || role == 'ROLE_ADMIN' || role == 'ROLE_MANAGER'){
-		            	if(showButton){
-			        		 Ext.defer(function(){
-			                     new Ext.Button({
-			             			 name : 'uploadPayment',
-			            			 itemId : 'uploadPayment',
-			            			 iconCls:'icon-add',
-			                         text: SuppAppMsg.suppliersLoadFile,
-			                         handler: function(grid, rowIndex, colIndex) {
-			                         	this.fireEvent('buttonclick', grid, record);
-			                         }
-			                     }).render(document.body, id);
-			                 },50);
-			
-			                 return Ext.String.format('<div id="{0}"></div>', id);
-		            	}
-	            	}
-             }
-        }*/
         ];
         
         this.dockedItems = [

@@ -74,7 +74,8 @@ Ext.define('SupplierApp.view.purchaseOrder.PurchaseOrderDetailGrid' ,{
         this.columns = [{
 						    width: 100,
 						    dataIndex: 'status',
-						    hidden:true
+						    hidden:true,
+						    hideable: false,//Para que no aparezca en la lista de "Columnas"
 						},{
 						    text     : SuppAppMsg.purchaseTitle26,
 						    width: 50,
@@ -82,8 +83,7 @@ Ext.define('SupplierApp.view.purchaseOrder.PurchaseOrderDetailGrid' ,{
 						},{
 						    text     : 'Código',
 						    width: 70,
-						    dataIndex: 'itemNumber',
-						    hidden:true
+						    dataIndex: 'itemNumber'
 						},{
 						    text     : SuppAppMsg.paymentTitle1,
 						    width: 70,
@@ -94,15 +94,13 @@ Ext.define('SupplierApp.view.purchaseOrder.PurchaseOrderDetailGrid' ,{
 						    dataIndex: 'glOffSet'
 						},{
 						    text     : 'Cantidad',
-						    width: 70,
+						    width: 100,
 						    dataIndex: 'quantity',
-						    renderer : Ext.util.Format.numberRenderer('0,0.00'),
-						    hidden:true
+						    renderer : Ext.util.Format.numberRenderer('0,0.00')
 						},{
 						    text     : 'UOM',
 						    width: 50,
-						    dataIndex: 'uom',
-						    hidden:true
+						    dataIndex: 'uom'
 						},{
 						    text     : SuppAppMsg.purchaseTitle29,
 						    width: 300,
@@ -111,73 +109,84 @@ Ext.define('SupplierApp.view.purchaseOrder.PurchaseOrderDetailGrid' ,{
 						    text     : 'Código SAT',
 						    width: 80,
 						    dataIndex: 'codigoSat',
-						    hidden:true
+						    hidden:true,
+						    hideable: false,
 						},{
-						    text     : 'Precio unitario',
+						    text     : 'Costo unitario',
 						    width: 100,
 						    dataIndex: 'unitCost',
 						    renderer : Ext.util.Format.numberRenderer('0,0.00'),
-						    hidden:true
+						    hidden:true,
+						    hideable: false,
 						},{
 						    text     : SuppAppMsg.purchaseOrderÌmporteTotal,
 						    width: 80,
-						    dataIndex: 'extendedPrice',
+						    dataIndex: 'amount',
 						    renderer : Ext.util.Format.numberRenderer('0,0.00')
 						},{
 							text     : 'Recibido',
 						    width: 90,
 						    dataIndex: 'received',
 						    renderer : Ext.util.Format.numberRenderer('0,0.00'),
-						    hidden:true
+						    hidden:true,
+						    hideable: false,
 						},{
 							text     : 'Rechazado',
 						    width: 90,
 						    dataIndex: 'rejected',
 						    renderer : Ext.util.Format.numberRenderer('0,0.00'),
-						    hidden:true
+						    hidden:true,
+						    hideable: false,
 						},{
 						    text     : 'Por recibir',
 						    width: 100,
 						    dataIndex: 'toReceive',
 						    renderer : Ext.util.Format.numberRenderer('0,0.00'),
 						    //hidden:role=='ROLE_SUPPLIER' || role== 'ROLE_SUPPLIER_OPEN'?true:false,
-						    hidden:true
+						    hidden:true,
+						    hideable: false,
 						},{
 						    text     : 'Por rechazar',
 						    width: 100,
 						    dataIndex: 'toReject',
 						    renderer : Ext.util.Format.numberRenderer('0,0.00'),
 						    //hidden:role=='ROLE_SUPPLIER' || role== 'ROLE_SUPPLIER_OPEN'?true:false,
-							hidden:true
+							hidden:true,
+						    hideable: false,
 						},{
 						    text     : 'Pendiente',
 						    width: 80,
 						    hidden:false,
 						    dataIndex: 'pending',
 						    renderer : Ext.util.Format.numberRenderer('0,0.00'),
-						    hidden:true
+						    hidden:true,
+						    hideable: false,
 						},{
 						    text     : 'Importe recibido',
 						    width: 100,
 						    dataIndex: 'amuntReceived',
 						    renderer : Ext.util.Format.numberRenderer('0,0.00'),
-						    hidden:true
+						    hidden:true,
+						    hideable: false,
 						},{
 						    text     : 'Importe pendiente',
 						    width: 100,
 						    dataIndex: 'openAmount',
 						    renderer : Ext.util.Format.numberRenderer('0,0.00'),
-						    hidden:true
+						    hidden:true,
+						    hideable: false,
 						},{
 						    width: 160,
 						    text: 'Motivo de rechazo',
 						    dataIndex: 'reason',
-						    hidden:true
+						    hidden:true,
+						    hideable: false,
 						},{
 						    text     : 'Notas',
 						    width: 180,
 						    dataIndex: 'notes',
-						    hidden:true
+						    hidden:true,
+						    hideable: false,
 						},{
 						    text     : SuppAppMsg.purchaseTitle30,
 						    width: 550,
@@ -185,10 +194,12 @@ Ext.define('SupplierApp.view.purchaseOrder.PurchaseOrderDetailGrid' ,{
 						    renderer: renderTip
 						},{
 						    dataIndex: 'taxCode',
-						    hidden:true
+						    hidden:true,
+						    hideable: false,
 						},{
 						    dataIndex: 'taxable',
-						    hidden:true
+						    hidden:true,
+						    hideable: false,
 						}];
         
         this.tbar = [ {

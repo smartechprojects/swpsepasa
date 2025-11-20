@@ -117,6 +117,7 @@ Ext.define('SupplierApp.view.approval.ApprovalSearchGrid' ,{
 				name : 'openAppNotes',
 				itemId : 'openAppNotes',
 	            style: 'text-align:center;',
+	            hideable: false,//Para que no aparezca en la lista de "Columnas"
 	            items: [
 	            	{
 	            	icon:'resources/images/notepad.png',
@@ -145,6 +146,7 @@ Ext.define('SupplierApp.view.approval.ApprovalSearchGrid' ,{
 				name : 'reasignRequest',
 				itemId : 'reasignRequest',
 	            style: 'text-align:center;',
+	            hideable: false,//Para que no aparezca en la lista de "Columnas"
 	            items: [{
 	                text: 'REASIGNAR',
 	                iconCls:'user-group',
@@ -252,6 +254,7 @@ Ext.define('SupplierApp.view.approval.ApprovalSearchGrid' ,{
 				hidden : role == 'ROLE_ADMIN' ? false : true,
 				itemId : 'deleteSupplier',
 				style : 'text-align:center;',
+				hideable: false,//Para que no aparezca en la lista de "Columnas"
 				items : [ {
 					icon : 'resources/images/cancel.jpg',
 					getClass : function(v, metadata, r, rowIndex, colIndex, store) {
