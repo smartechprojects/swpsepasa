@@ -2311,7 +2311,7 @@ public class FileUploadController {
             String ctPdf = uploadItem.getFileTwo().getContentType();
             if(!"application/pdf".equals(ctPdf)) {
             	json.put("success", false);
-            	json.put("message", "El documento cargado de tipo .pdf no es vÃ¡lido");
+            	json.put("message", "El documento cargado de tipo .pdf no es válido");
             	return json.toString();
             }
         }

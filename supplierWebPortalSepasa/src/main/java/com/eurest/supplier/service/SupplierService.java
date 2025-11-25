@@ -258,7 +258,7 @@ public void sendAddressBookTest() {
 	  if(o.getEstado() == "0" || o.getEstado()== null) o.setEstado("");
 	  
       EmailServiceAsync emailAsyncPur = new EmailServiceAsync();
-      emailAsyncPur.setProperties("SEPASA - Registro como borrador en Alta de Proveedor. Ticket " + o.getTicketId(), this.stringUtils.prepareEmailContent("Estimado proveedor <br /><br />Hemos recibido una solicitud con carde borrador en nuestros sistemas. Si solicitud serÃ  procesada una vez que someta el formato de forma definitiva. <br /> <br /> Puede continuar actualizando sus datos utilizando el nde ticket que le enviamos a continuaciÃ²n " + o.getTicketId() + "<br /><br />" + AppConstants.EMAIL_PORTAL_LINK), o.getEmailSupplier());
+      emailAsyncPur.setProperties("SEPASA - Registro como borrador en Alta de Proveedor. Ticket " + o.getTicketId(), this.stringUtils.prepareEmailContent("Estimado proveedor <br /><br />Hemos recibido una solicitud con carde borrador en nuestros sistemas. Si solicitud será  procesada una vez que someta el formato de forma definitiva. <br /> <br /> Puede continuar actualizando sus datos utilizando el número de ticket que le enviamos a continuación " + o.getTicketId() + "<br /><br />" + AppConstants.EMAIL_PORTAL_LINK), o.getEmailSupplier());
       emailAsyncPur.setMailSender(this.mailSenderObj);
       Thread emailThreadPur = new Thread(emailAsyncPur);
       emailThreadPur.start();
