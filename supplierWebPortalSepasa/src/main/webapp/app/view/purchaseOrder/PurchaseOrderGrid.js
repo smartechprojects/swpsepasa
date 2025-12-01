@@ -196,6 +196,30 @@
 
              }
         },{
+            xtype: 'actioncolumn', 
+            width: 100,
+            header:  SuppAppMsg.purchaseOrderEvidence,
+            align: 'center',
+			name : 'showOrderEvidence',
+			id : 'showOrderEvidence',
+			itemId : 'showOrderEvidence',
+			//hidden: role=='ROLE_SUPPLIER'?true:false,			
+            style: 'text-align:center;',
+            items: [
+            	{
+            	icon:'resources/images/archivo-pdf.png',
+          	     iconCls: 'increaseSize',
+            	  getClass: function(v, metadata, r, rowIndex, colIndex, store) {
+              		  //if(r.data.orderEvidence == true) {
+              			  return "increaseSize";
+        	          //}else{
+        	          //  return "x-hide-display";
+        	          //}
+              	  },
+                  handler: function(grid, rowIndex, colIndex) {
+                  	this.fireEvent('buttonclick', grid, rowIndex, colIndex);
+             }}]
+        },{
             text     : SuppAppMsg.purchaseOrderRecibosFacturas,
             align: 'center',
             width: 120,

@@ -8,6 +8,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.MimeHeaders;
@@ -73,6 +77,87 @@ public class HTTPRequestService {
         }
 	}
 
+	public Map<String, byte[]> httpPostFileDownload(String destUrl, String postData, String usr, String pwd) throws Exception {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss_SSS");
+		Map<String, byte[]> mapResult = new HashMap<String, byte[]>();
+
+		try {
+	        URL url = new URL(destUrl);
+	        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+	        conn.setDoOutput(true);
+	        conn.setDoInput(true);
+	        conn.setRequestMethod("POST");
+	        conn.setRequestProperty("Accept", "application/octet-stream"); // o application/pdf
+	        conn.setRequestProperty("Content-Type", "application/json");
+	        
+	        String auth = usr + ":" + pwd;
+	        String encodedAuth = javax.xml.bind.DatatypeConverter.printBase64Binary(auth.getBytes("UTF-8"));
+	        conn.setRequestProperty("Authorization", "Basic " + encodedAuth);
+
+	        // Enviar JSON
+	        try (OutputStream os = conn.getOutputStream()) {
+	            os.write(postData.getBytes("UTF-8"));
+	        }
+	        
+	        int status = conn.getResponseCode();
+
+	        if (status == HttpURLConnection.HTTP_OK) {
+	            // Leer Binario
+	        	String contentDisposition = conn.getHeaderField("Content-Disposition");
+	        	String fileName = AppConstants.DEFAULT_NO_NAME_FILE + "_" + sdf.format(new Date()) + ".pdf"; // Valor por defecto
+
+	        	if (contentDisposition != null && contentDisposition.contains("filename=")) {
+	        	    fileName = contentDisposition.substring(contentDisposition.indexOf("filename=") + 9).replace("\"", "");
+	        	}
+
+	        	log4j.info("Archivo Recibido: " + fileName + " Request: " + postData);
+	        	
+	        	//Obtener Arreglo de Bytes
+	        	byte[] byteArrayFile;
+	        	try (InputStream is = conn.getInputStream();
+	        	     ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+	        	    byte[] buffer = new byte[4096];
+	        	    int len;
+
+	        	    while ((len = is.read(buffer)) != -1) {
+	        	        baos.write(buffer, 0, len);
+	        	    }
+
+	        	    byteArrayFile = baos.toByteArray();
+	        	    if(byteArrayFile != null) {
+	        	    	mapResult.put(fileName, byteArrayFile);
+	        	    }
+	        	}
+	        } else {
+	        	//Obtener Error
+	            InputStream es = conn.getErrorStream();
+	            if (es != null) {
+	                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	                byte[] buffer = new byte[4096];
+	                int len;
+
+	                while ((len = es.read(buffer)) != -1) {
+	                    baos.write(buffer, 0, len);
+	                }
+
+	                String error = new String(baos.toByteArray(), "UTF-8");
+	                log4j.error("Request: " + postData + " Error: " + error);
+	                es.close();
+	            }
+	        }
+
+	        conn.disconnect();
+
+	    } catch (Exception e) {
+        	log4j.error("Exception" , e);
+            e.printStackTrace();
+	    }
+		
+		return mapResult;
+	}
+	
     public String performSoapCall(String xmlContent) {
         try {
             SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();

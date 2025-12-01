@@ -133,6 +133,18 @@ public class PurchaseOrder {
 	
 	private String metodoPago;
 
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(iso = ISO.DATE_TIME)
+	private Date portalPurchaseOrderDate;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@DateTimeFormat(iso = ISO.DATE_TIME)
+	private Date portalOrderEvidenceDate;
+	
+	private boolean orderEvidence;
+	
+	private int evidenceAttemps;
+	
 	
 	public int getId() {
 		return id;
@@ -591,5 +603,36 @@ public class PurchaseOrder {
 		this.metodoPago = metodoPago;
 	}
 
+	public Date getPortalPurchaseOrderDate() {
+		return portalPurchaseOrderDate;
+	}
+
+	public void setPortalPurchaseOrderDate(Date portalPurchaseOrderDate) {
+		this.portalPurchaseOrderDate = portalPurchaseOrderDate;
+	}
+
+	public Date getPortalOrderEvidenceDate() {
+		return portalOrderEvidenceDate;
+	}
+
+	public void setPortalOrderEvidenceDate(Date portalOrderEvidenceDate) {
+		this.portalOrderEvidenceDate = portalOrderEvidenceDate;
+	}
+
+	public boolean isOrderEvidence() {
+		return orderEvidence;
+	}
+
+	public void setOrderEvidence(boolean orderEvidence) {
+		this.orderEvidence = orderEvidence;
+	}
+
+	public int getEvidenceAttemps() {
+		return evidenceAttemps;
+	}
+
+	public void setEvidenceAttemps(int evidenceAttemps) {
+		this.evidenceAttemps = evidenceAttemps;
+	}
 	
 }

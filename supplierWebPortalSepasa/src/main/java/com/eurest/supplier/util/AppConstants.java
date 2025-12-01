@@ -304,6 +304,16 @@ public final class AppConstants {
     
     public static final String EMAIL_PORTAL_LINK = "https://3.222.152.41/supplierWebPortalSepasa/";
     
+    public static final String URL_JDE_ORCHESTRATOR_HOST = "https://hamejdeorchpy.endtoend.com.mx";
+    
+    public static final String URL_JDE_ORCHESTRATOR_PO_FILE_API = "/jderest/orchestrator/JDE_ORCH_55_OCPPMexico";
+    
+    public static final String URL_JDE_ORCHESTRATOR_WS_USR = "Sconsultin";
+    
+    public static final String URL_JDE_ORCHESTRATOR_WS_PWD = "==a20$SGFtZTIwMjUq";
+    
+    public static final String DEFAULT_NO_NAME_FILE = "NoNameFile";
+    
     public static final String EMAIL_NEW_SUPPLIER_SUBJECT = "SEPASA - Solicitud Alta de Proveedor";
     
     public static final String EMAIL_DRAFT_SUPPLIER_SUBJECT = "SEPASA - Registro como borrador en Alta de Proveedor. Ticket ";

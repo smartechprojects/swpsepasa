@@ -1,5 +1,8 @@
 package com.eurest.supplier.controller;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -40,7 +43,6 @@ import com.eurest.supplier.model.UserDocument;
 import com.eurest.supplier.service.DataAuditService;
 import com.eurest.supplier.service.DocumentsService;
 import com.eurest.supplier.service.EmailService;
-import com.eurest.supplier.service.FTPService;
 import com.eurest.supplier.service.FiscalDocumentService;
 import com.eurest.supplier.service.PaymentCalendarService;
 import com.eurest.supplier.service.PurchaseOrderService;
@@ -797,6 +799,62 @@ public class PurchaseOrderController {
 				total = list.size();
 				return mapReceiptOK(list, total);
 		        
+		} catch (Exception e) {
+			log4j.error("Exception" , e);
+			e.printStackTrace();
+			return mapError(e.getMessage());
+		}
+	}
+	
+	@RequestMapping(value ="/supplier/orders/openDocumentPurchaseOrder.action", method = RequestMethod.GET)
+    public void openDocumentPlantAccess(HttpServletResponse response, 
+    			             @RequestParam int id) throws IOException {
+     
+		PurchaseOrder po = purchaseOrderService.getOrderById(id);
+		UserDocument doc = documentsService.searchCriteriaByOrderNumberFiscalType(po.getOrderNumber(), po.getOrderType(), po.getAddressNumber(), "EvidenciaJDE");
+		String fileName = doc.getName();
+		String contentType = doc.getType();
+		byte[] content = doc.getContent();
+
+		/*
+		if("text/xml".equals(contentType)) {
+			ByteArrayInputStream stream = new  ByteArrayInputStream(doc.getContent());
+			String xmlContent = IOUtils.toString(stream, "UTF-8");
+			xmlContent = takeOffBOM(IOUtils.toInputStream(xmlContent, "UTF-8"));
+			xmlContent = xmlContent.replace("?<?xml", "<?xml");
+			content = xmlContent.getBytes();
+		}
+		*/
+		
+		response.setHeader("Content-Type", contentType);
+        response.setHeader("Content-Length", String.valueOf(content.length));
+        response.setHeader("Content-Disposition", "inline; filename=\"" + fileName + "\"");
+        InputStream is = new ByteArrayInputStream(content);
+        byte[] bytes = new byte[1024];
+        int bytesRead;
+        while ((bytesRead = is.read(bytes)) != -1) {
+            response.getOutputStream().write(bytes, 0, bytesRead);
+        }
+        is.close();
+    }
+	
+	@RequestMapping(value ="/supplier/orders/getPurchaseOrderListBulk.action", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody Map<String, Object> getPurchaseOrderListBulk(HttpServletRequest request, HttpServletResponse response){
+		try{
+		    purchaseOrderService.getPurchaseOrderListBulk();
+			return mapStrOk("El proceso se ha ejecutado de forma exitosa.");
+		} catch (Exception e) {
+			log4j.error("Exception" , e);
+			e.printStackTrace();
+			return mapError(e.getMessage());
+		}
+	}
+
+	@RequestMapping(value ="/supplier/orders/getPurchaseOrderDocumentDownloadBulk.action", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody Map<String, Object> getPurchaseOrderDocumentDownloadBulk(HttpServletRequest request, HttpServletResponse response){
+		try{
+		    purchaseOrderService.getPurchaseOrderDocumentDownloadBulk();
+			return mapStrOk("El proceso se ha ejecutado de forma exitosa.");
 		} catch (Exception e) {
 			log4j.error("Exception" , e);
 			e.printStackTrace();

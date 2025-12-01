@@ -167,6 +167,19 @@ public class PurchaseOrderDao {
 		    return null;
 	}
 	
+	@SuppressWarnings("unchecked")
+	public List<PurchaseOrder> getPurchaseOrderByOrderEvidence(boolean isWithEvidence, int maxAttempts) {
+		Session session = this.sessionFactory.getCurrentSession();
+		Criteria criteria = session.createCriteria(PurchaseOrder.class);
+		criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+		criteria.add(
+				Restrictions.conjunction()
+				.add(Restrictions.eq("orderEvidence", isWithEvidence))
+				.add(Restrictions.lt("evidenceAttemps", maxAttempts))
+				);
+		return criteria.list();
+	}
+	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public List<PurchaseOrder> searchbyOrderNumber(int orderNumber, String addressBook, 
 										            Date poFromDate, Date poToDate, String status,

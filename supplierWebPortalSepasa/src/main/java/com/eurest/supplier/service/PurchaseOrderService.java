@@ -568,6 +568,10 @@ public class PurchaseOrderService {
 		return purchaseOrderDao.searchbyOrder(orderNumber, orderType);
 	}
 
+	public List<PurchaseOrder> getPurchaseOrderByOrderEvidence(boolean isWithEvidence, int maxAttempts) {
+		return purchaseOrderDao.getPurchaseOrderByOrderEvidence(isWithEvidence, maxAttempts);
+	}
+	
 	public List<PurchaseOrder> searchCriteriaByEmail(String email) {
 		return purchaseOrderDao.searchCriteriaByEmail(email.trim());
 	}
@@ -841,10 +845,14 @@ public class PurchaseOrderService {
 
 	}
 
-	public void getPurchaseOrderList() {
+	public void getPurchaseOrderListBulk() {
 		jDERestService.getPurchaseOrderList();
 	}
 	
+	public void getPurchaseOrderDocumentDownloadBulk() {
+		jDERestService.getPurchaseOrderDocumentDownload();
+	}
+		
 	public void saveMultiplePayments(List<PurchaseOrderPayment> list) {
 		purchaseOrderDao.saveMultiplePayments(list);
 	}

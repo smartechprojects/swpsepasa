@@ -47,6 +47,10 @@ Ext.define('SupplierApp.model.PurchaseOrder', {
 				{name:  'transferStatus'},
 				{name:  'relievedAmount'},
 				{name:  'sentToWns'},
+				{name:  'orderEvidence'},
+				{name:  'evidenceAttemps'},
+				{name:  'portalPurchaseOrderDate', type: 'date', dateFormat: 'c'},
+				{name:  'portalOrderEvidenceDate', type: 'date', dateFormat: 'c'},
 				{model: 'SupplierApp.model.PurchaseOrderDetail', name: 'purchaseOrderDetail', mapping:'purchaseOrderDetail',type: 'auto'}
 
         ],

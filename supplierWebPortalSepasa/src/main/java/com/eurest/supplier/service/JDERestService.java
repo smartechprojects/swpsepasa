@@ -39,6 +39,7 @@ import com.eurest.supplier.dto.AddressBookLayot;
 import com.eurest.supplier.dto.IntegerListDTO;
 import com.eurest.supplier.dto.InvoiceRequestDTO;
 import com.eurest.supplier.dto.OrderGridWrapper;
+import com.eurest.supplier.dto.POFileRequestDTO;
 import com.eurest.supplier.dto.PurchaseOrderDTO;
 import com.eurest.supplier.dto.PurchaseOrderGridDTO;
 import com.eurest.supplier.dto.SupplierDTO;
@@ -57,6 +58,7 @@ import com.eurest.supplier.model.Receipt;
 import com.eurest.supplier.model.Supplier;
 import com.eurest.supplier.model.Tolerances;
 import com.eurest.supplier.model.UDC;
+import com.eurest.supplier.model.UserDocument;
 import com.eurest.supplier.model.Users;
 import com.eurest.supplier.util.AppConstants;
 import com.eurest.supplier.util.JdeJavaJulianDateTools;
@@ -104,6 +106,9 @@ public class JDERestService {
   ExchangeRateService exchangeRateService;
   
   @Autowired
+  HTTPRequestService httpRequestService;
+  
+  @Autowired
   LoggerJEdwars loggerJEdwars;
   
   String orderDate;
@@ -115,6 +120,10 @@ public class JDERestService {
   
   private Logger log4j = Logger.getLogger(JDERestService.class);
 
+  final private int WS_MAX_DOWNLOAD_ATTEMPTS = 3;
+  final private String WS_SUPPLIER_SUFFIX = "-1";
+	
+	
 //	@Scheduled(fixedDelay = 4200000, initialDelay = 3000)
 //	@Scheduled(cron = "0 30 2 * * ?")
 	public void getOrderPayments() {
@@ -845,7 +854,7 @@ public class JDERestService {
 	//@Scheduled(fixedDelay = 9920000, initialDelay = 3000)
 	//@Scheduled(cron = "0 0 14,18,22 * * ?")
  	public void getPurchaseOrderList() {
-		log4j.info("Carga órdenes: " + new Date());
+		log4j.info("================== Inicia Carga órdenes: " + new Date() + " ==================");
  		try {
  			 List<String> noApprovalFlowPOList = new ArrayList<String>();
  			 UDC noApprovalFlowPO = udcService.searchBySystemAndKey("NOAPPROVALFLOWPO", "UNIQUE");
@@ -925,6 +934,7 @@ public class JDERestService {
  								if(s!=null) {
  									o.setLongCompanyName(s.getRazonSocial());
  								}
+ 								o.setPortalPurchaseOrderDate(new Date());
  							}
  							
  							List<PurchaseOrder> returnedList = purchaseOrderService.saveMultiple(objList);
@@ -934,6 +944,9 @@ public class JDERestService {
  									poNumberList.add(String.valueOf(poSaved.getOrderNumber()));	 									
  								}
  								log4j.info("OC Registradas: " + String.join(", ", poNumberList)  + ".");
+ 								
+ 								//Obtiene el PDF de las OC
+ 								this.getPurchaseOrderDocumentByList(returnedList);
  							}
  							/*JSC: Se comenta la notificación de OC en acuerdo con Cristian. 29/10/2025 
  							for(PurchaseOrder o : returnedList) {
@@ -968,7 +981,85 @@ public class JDERestService {
  		}
  	}
   
+ 	//@Scheduled(fixedDelay = 9920000, initialDelay = 3000)
+	//@Scheduled(cron = "0 0 2 * * ?")
+ 	public void getPurchaseOrderDocumentDownload() {
+ 		log4j.info("================== Inicia Busqueda de Documentos de OC (Calendarizado) ==================");
+ 		List<PurchaseOrder> poList = purchaseOrderService.getPurchaseOrderByOrderEvidence(false, WS_MAX_DOWNLOAD_ATTEMPTS);
+ 		this.getPurchaseOrderDocumentByList(poList);
+ 		log4j.info("================== Fin Busqueda de Documentos de OC (Calendarizado) ==================");
+ 	}
 
+ 	public void getPurchaseOrderDocumentByList(List<PurchaseOrder> poList) {
+ 		log4j.info("================== Inicia Busqueda de Documentos de OC ==================");
+ 		try {
+			if(poList != null) {
+				for(PurchaseOrder po : poList) {
+					if(!po.isOrderEvidence() && po.getEvidenceAttemps() < WS_MAX_DOWNLOAD_ATTEMPTS) {
+						//JSON
+						POFileRequestDTO request = new POFileRequestDTO();
+						request.setNit_proveedor(po.getAddressNumber() + WS_SUPPLIER_SUFFIX);
+						request.setNumero_oc(po.getOriginalOrderNumber());
+						request.setTipo_oc(po.getOrderType());
+						request.setEmpresa_oc(po.getOrderCompany());
+						
+			            ObjectMapper objectMapper = new ObjectMapper();
+			            String jsonRequest = objectMapper.writeValueAsString(request);
+						
+			            //Consulta WS del Orquestador de JDE de HAME
+						Map<String, byte[]> result = httpRequestService.httpPostFileDownload(AppConstants.URL_JDE_ORCHESTRATOR_HOST + AppConstants.URL_JDE_ORCHESTRATOR_PO_FILE_API,
+								jsonRequest,
+								AppConstants.URL_JDE_ORCHESTRATOR_WS_USR,
+								new String(Base64.getDecoder().decode(AppConstants.URL_JDE_ORCHESTRATOR_WS_PWD.replace("==a20$", ""))));
+						
+						//Guarda Documentos
+						if(result != null && !result.isEmpty()) {
+							result.forEach((name, file) -> {
+								if(name != null && file != null) {
+									String newFileName = "Evidencia_OC_" + po.getOrderNumber() + "_Proveedor_" + po.getAddressNumber() + ".pdf"; 
+									UserDocument doc = new UserDocument(); 
+									doc.setAddressBook(po.getAddressNumber());
+									doc.setDocumentNumber(po.getOrderNumber());
+									doc.setDocumentType(po.getOrderType());
+									doc.setContent(file);
+									doc.setName(newFileName);
+									doc.setDescription(name);
+									doc.setSize(file.length);
+									doc.setStatus(true);
+									doc.setAccept(true);
+									doc.setFiscalType("EvidenciaJDE");
+									doc.setType("application/pdf");
+									doc.setFolio(null);
+									doc.setSerie(null);
+									doc.setUuid(null);
+									doc.setUploadDate(new Date());
+									doc.setFiscalRef(0);
+									documentsService.save(doc, null, null);
+									
+									//Actualizar Registro de OC
+									po.setOrderEvidence(true);
+									po.setPortalOrderEvidenceDate(new Date());
+									po.setEvidenceAttemps(po.getEvidenceAttemps() + 1);
+									purchaseOrderService.updateOrders(po);
+								}
+							});						
+						} else {
+							//Actualizar Registro de OC con Documento No Encontrado
+							po.setOrderEvidence(false);
+							po.setPortalOrderEvidenceDate(new Date());
+							po.setEvidenceAttemps(po.getEvidenceAttemps() + 1);
+							purchaseOrderService.updateOrders(po);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+ 			log4j.error("Exception" , e);
+ 			e.printStackTrace();
+		}
+ 		log4j.info("================== Fin Busqueda de Documentos de OC ==================");
+ 	}
+ 	
  	public void getPurchaseReceiptList(String supList) {
  		//log4j.info("Carga recibos: " + new Date());
  		try {
@@ -1063,7 +1154,7 @@ public class JDERestService {
  			e.printStackTrace();
  		}
  	}
-  
+ 	
  	//@Scheduled(cron = "0 0 22 * * ?")
 	//@Scheduled(fixedDelay = 9920000, initialDelay = 15000)
  	public void getPurchaseOrderListHistory() {

@@ -189,6 +189,9 @@ Ext.define('SupplierApp.controller.PurchaseOrder', {
 	        		'logDataGrid button[action=exportExcelLog]' : {
 	        			click : this.exportExcelLog
 	        		},
+					'#showOrderEvidence' : {
+						"buttonclick" : this.showOrderEvidence
+					},
 					'#showReceipts' : {
 						"buttonclick" : this.showReceipts
 					},
@@ -327,7 +330,16 @@ Ext.define('SupplierApp.controller.PurchaseOrder', {
 		});
     },
     
-    
+    showOrderEvidence : function(grid, rowIndex, colIndex, record) {
+    	var record = grid.store.getAt(rowIndex);
+    	if(record.data.orderEvidence == true) {
+    		var href = "supplier/orders/openDocumentPurchaseOrder.action?id=" + record.data.id;
+    		var newWindow = window.open(href, '_blank');
+    		setTimeout(function(){ newWindow.document.title = 'Evidencia de Orden de Compra'; }, 10);    		
+    	} else {
+    		Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: SuppAppMsg.supplierMessage, msg: SuppAppMsg.purchaseOrderNoDocument  });
+    	}
+    },
     
     showReceipts: function(grid, record){
     	var me = this;
