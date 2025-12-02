@@ -999,7 +999,7 @@ public class JDERestService {
 						//JSON
 						POFileRequestDTO request = new POFileRequestDTO();
 						request.setNit_proveedor(po.getAddressNumber() + WS_SUPPLIER_SUFFIX);
-						request.setNumero_oc(po.getOriginalOrderNumber());
+						request.setNumero_oc(String.valueOf(po.getOrderNumber()));
 						request.setTipo_oc(po.getOrderType());
 						request.setEmpresa_oc(po.getOrderCompany());
 						
