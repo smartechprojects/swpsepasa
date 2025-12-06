@@ -2098,9 +2098,8 @@ public class PurchaseOrderService {
 				SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 				List<PurchaseOrderGridDTO> listDTO = new ArrayList<PurchaseOrderGridDTO>();
 				for(Receipt r : list) {
-					if (r.getFolio() != null && !"".equals(r.getFolio().trim())) {
+					if (r.getUuid() != null && !"".equals(r.getUuid().trim())) {
 						
-						String invNbr = "";						
 						String folio = "";						
 						if(r.getFolio() != null && !"null".equals(r.getFolio()) && !"NULL".equals(r.getFolio()) ) {
 							folio = r.getFolio();
@@ -2111,14 +2110,29 @@ public class PurchaseOrderService {
 							serie = r.getSerie();
 						}
 						
-						invNbr = serie + folio;						
-						PurchaseOrderGridDTO dto = new PurchaseOrderGridDTO();
-						dto.setAddressNumber(r.getAddressNumber());
-						dto.setOrderNumber(String.valueOf(r.getOrderNumber()));
-						dto.setOrderType(r.getOrderType());
-						dto.setOrderCompany(r.getOrderCompany());
-						dto.setInvoiceNumber(invNbr);
-						listDTO.add(dto);
+						//Si la factura no tiene folio, se asignan los últimos 12 caracteres del UUID
+						if("".equals(folio) && r.getUuid() != null && r.getUuid().length() >= 12) {
+							folio = r.getUuid().substring(r.getUuid().length() - 12).replaceAll("[^a-zA-Z0-9]", "");
+							serie = "";
+						}
+						
+						String vinv = "";
+						vinv = serie + folio;
+						
+						//Si el vinv tiene mas de 25 caracteres, se asignan los últimos 12 caracteres del UUID
+						if(vinv.length() > 25 && r.getUuid() != null && r.getUuid().length() >= 12) {
+							vinv = r.getUuid().substring(r.getUuid().length() - 12).replaceAll("[^a-zA-Z0-9]", "");
+						}
+						
+						if(!"".equals(vinv)) {
+							PurchaseOrderGridDTO dto = new PurchaseOrderGridDTO();
+							dto.setAddressNumber(r.getAddressNumber());
+							dto.setOrderNumber(String.valueOf(r.getOrderNumber()));
+							dto.setOrderType(r.getOrderType());
+							dto.setOrderCompany(r.getOrderCompany());
+							dto.setInvoiceNumber(vinv);
+							listDTO.add(dto);	
+						}
 					}
 				}
 				
