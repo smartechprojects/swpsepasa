@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.hibernate.CacheMode;
@@ -60,6 +61,21 @@ public class PurchaseOrderDao {
 	public ReceiptInvoice getReceiptInvoiceById(int id) {
 		Session session = this.sessionFactory.getCurrentSession();
 		return (ReceiptInvoice) session.get(ReceiptInvoice.class, id);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<PurchaseOrder> getPurchaseOrderByIds(String purchaseOrderIds) {
+		
+		List<Integer> ids = Arrays.stream(purchaseOrderIds.split(","))
+				.map(String::trim)
+                .map(Integer::valueOf)
+                .collect(Collectors.toList());
+		
+		Session session = this.sessionFactory.getCurrentSession();
+		Criteria criteria = session.createCriteria(PurchaseOrder.class);
+		criteria.add(Restrictions.in("id", ids));
+		criteria.addOrder(Order.asc("id"));
+		return criteria.list();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -835,6 +851,41 @@ public class PurchaseOrderDao {
 				.add(Restrictions.ne("status", AppConstants.STATUS_OC_CANCEL))
 				);
 		
+		criteria.addOrder(Order.asc("documentNumber"));
+		criteria.addOrder(Order.asc("lineNumber"));
+		return criteria.list();
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Receipt> getOrderReceiptsByOrderAndUuid(String addressBook, int orderNumber, String orderType, String orderCompany, String uuid) {
+		Session session = this.sessionFactory.getCurrentSession();
+		Criteria criteria = session.createCriteria(Receipt.class);
+		criteria.add(
+				Restrictions.conjunction()
+				.add(Restrictions.eq("orderNumber", orderNumber))
+				.add(Restrictions.eq("orderType", orderType))
+				.add(Restrictions.eq("orderCompany", orderCompany))
+				.add(Restrictions.eq("addressNumber",addressBook))
+				.add(Restrictions.eq("uuid", uuid).ignoreCase())
+				);
+		
+		criteria.addOrder(Order.asc("documentNumber"));
+		criteria.addOrder(Order.asc("lineNumber"));
+		return criteria.list();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Receipt> getOrderReceiptsByIds(String receiptIds) {
+		
+		List<Integer> ids = Arrays.stream(receiptIds.split(","))
+				.map(String::trim)
+                .map(Integer::valueOf)
+                .collect(Collectors.toList());
+		
+		Session session = this.sessionFactory.getCurrentSession();
+		Criteria criteria = session.createCriteria(Receipt.class);
+		criteria.add(Restrictions.in("id", ids));
+		criteria.addOrder(Order.asc("orderNumber"));
 		criteria.addOrder(Order.asc("documentNumber"));
 		criteria.addOrder(Order.asc("lineNumber"));
 		return criteria.list();

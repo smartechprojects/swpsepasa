@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXBContext;
@@ -2090,8 +2091,26 @@ public class PurchaseOrderService {
 	}
 	
 	public List<Receipt> getOrderReceipts(int orderNumber,String addressBook, String orderType, String orderCompany) {
-		
 		List<Receipt> list = purchaseOrderDao.getOrderReceipts(orderNumber, addressBook, orderType, orderCompany);
+		this.setEstimatedPaymentDateReceipts(list);
+		return list;
+	}
+
+	public List<Receipt> getOrderReceiptsByOrderAndUuid(String addressBook, int orderNumber, String orderType, String orderCompany, String uuid) {
+		return purchaseOrderDao.getOrderReceiptsByOrderAndUuid(addressBook, orderNumber, orderType, orderCompany, uuid);
+	}
+	
+	public List<Receipt> getOrderReceiptsByIds(String receiptIds) {
+		List<Receipt> list = purchaseOrderDao.getOrderReceiptsByIds(receiptIds);
+		this.setEstimatedPaymentDateReceipts(list);
+		return list;
+	}
+	
+	public List<PurchaseOrder> getPurchaseOrderByIds(String purchaseOrderIds) {
+		return purchaseOrderDao.getPurchaseOrderByIds(purchaseOrderIds);
+	}
+	
+	public void setEstimatedPaymentDateReceipts(List<Receipt> list) {
 		try {
 			//Se busca la Fecha Estimada de Pago en JDE
 			if(list != null && !list.isEmpty()) {
@@ -2198,8 +2217,7 @@ public class PurchaseOrderService {
 		} catch (Exception e) {
 			log4j.error("Exception" , e);
 			e.printStackTrace();
-		}
-		return list;
+		}		
 	}
 	
 	public List<Receipt> getComplPendingReceipts(String addressBook) {

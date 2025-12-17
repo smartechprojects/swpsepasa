@@ -62,6 +62,11 @@ public class FiscalDocuments {
 	private String orderCompany; 
 	private int orderNumber; 
 	private String orderType;
+	private boolean multiOrder;
+	private String multiOrderCompany; 
+	private String multiOrderNumber; 
+	private String multiOrderType;
+	private String multiOrderIds;
 	private String currencyMode;
 	private String currencyCode;	
 	private String paymentTerms;	
@@ -88,7 +93,6 @@ public class FiscalDocuments {
 	private String invoiceType;
 	private String responsibleUser1;
 	private String notes;
-
 	private Date creditNoteUploadDate; // Date requested
 	private Date transferDate; // Original promise delivery
 	private String transferStatus;
@@ -295,6 +299,36 @@ public class FiscalDocuments {
 	}
 	public void setOrderType(String orderType) {
 		this.orderType = orderType;
+	}
+	public boolean isMultiOrder() {
+		return multiOrder;
+	}
+	public void setMultiOrder(boolean multiOrder) {
+		this.multiOrder = multiOrder;
+	}
+	public String getMultiOrderCompany() {
+		return multiOrderCompany;
+	}
+	public void setMultiOrderCompany(String multiOrderCompany) {
+		this.multiOrderCompany = multiOrderCompany;
+	}
+	public String getMultiOrderNumber() {
+		return multiOrderNumber;
+	}
+	public void setMultiOrderNumber(String multiOrderNumber) {
+		this.multiOrderNumber = multiOrderNumber;
+	}
+	public String getMultiOrderType() {
+		return multiOrderType;
+	}
+	public void setMultiOrderType(String multiOrderType) {
+		this.multiOrderType = multiOrderType;
+	}
+	public String getMultiOrderIds() {
+		return multiOrderIds;
+	}
+	public void setMultiOrderIds(String multiOrderIds) {
+		this.multiOrderIds = multiOrderIds;
 	}
 	public String getCurrencyMode() {
 		return currencyMode;

@@ -151,7 +151,9 @@ public class FTPService implements Runnable{
 										fileContent,
 										"",
 										false,
-										0);
+										0,
+										false,
+										null);
 
 								log4j.info("*********** " + res);
 								if("".equals(res) || res.contains("DOC:")){

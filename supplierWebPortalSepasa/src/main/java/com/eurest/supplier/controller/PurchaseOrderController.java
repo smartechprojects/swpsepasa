@@ -5,11 +5,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -734,8 +737,7 @@ public class PurchaseOrderController {
 			return mapError(e.getMessage());
 		}
 	}
-	
-	
+		
 	@RequestMapping(value ="/receipt/getOrderReceipts.action")
 	public @ResponseBody Map<String, Object> searchByStatus(
 												  @RequestParam String addressBook, 
@@ -755,6 +757,36 @@ public class PurchaseOrderController {
 			return mapError(e.getMessage());
 		}
 	} 
+	
+	@RequestMapping(value ="/receipt/getOrderReceiptsMultiOrder.action")
+	public @ResponseBody Map<String, Object> searchByStatusMultiOrder(
+												  @RequestParam String addressBook, 
+												  @RequestParam String purchaseOrderIds){
+		
+		List<Receipt> list = new ArrayList<Receipt>();
+		int total=0;
+		try{
+			
+				if(purchaseOrderIds != null && !purchaseOrderIds.trim().isEmpty()) {					
+					List<PurchaseOrder> poList = purchaseOrderService.getPurchaseOrderByIds(purchaseOrderIds);
+					if(poList != null && !poList.isEmpty()) {
+						for(PurchaseOrder po : poList) {
+							List<Receipt> receiptlist = purchaseOrderService.getOrderReceipts(po.getOrderNumber(), addressBook, po.getOrderType(), po.getOrderCompany());
+							if(receiptlist != null && !receiptlist.isEmpty()) {
+								list.addAll(receiptlist);
+							}	
+						}
+					}
+					total = list.size();
+				}
+				return mapReceiptOK(list, total);
+		        
+		} catch (Exception e) {
+			log4j.error("Exception" , e);
+			e.printStackTrace();
+			return mapError(e.getMessage());
+		}
+	}
 	
 	@RequestMapping(value ="/receipt/getComplReceiptsByStatus.action")
 	public @ResponseBody Map<String, Object> getOrderReceiptsByStatus(

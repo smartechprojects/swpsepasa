@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -221,6 +222,10 @@ public class DocumentsService {
 		return documentsDao.searchCriteriaByRefFiscal(addresNumber, uuid);
 	}
 
+	public List<UserDocument> searchCriteriaByOrderAndUuid(String addressNumber, int orderNumber, String orderType, String uuid){
+		return documentsDao.searchCriteriaByOrderAndUuid(addressNumber, orderNumber, orderType, uuid);
+	}
+	
 	public List<UserDocument> searchCriteriaByDescription(String addressNumber, String description){
 		return documentsDao.searchCriteriaByDescription(addressNumber, description);
 	}
@@ -1804,7 +1809,9 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 								  String xmlContent,
 								  String receiptList,
 								  boolean specializedServices,
-								  double miscellaneousAmount){
+								  double miscellaneousAmount,
+								  boolean isMultipleOrder,
+								  List<PurchaseOrder> poListMultiOrder){
 		
 		try {
 			boolean isTaxValidationOn = true;
@@ -1845,6 +1852,12 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				}
 			}
 			
+			//Obtiene lista de Recibos
+			List<Receipt> requestedReceiptList = purchaseOrderService.getOrderReceiptsByIds(receiptList);
+			if(!(requestedReceiptList != null && !requestedReceiptList.isEmpty())) {
+				return "No existen recibos por facturar.";
+			}
+			
 			String rfcEmisor = inv.getRfcEmisor();
 			boolean allRules = true;
 			List<UDC> supExclList =  udcService.searchBySystem("NOCHECKSUP");
@@ -1866,20 +1879,6 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 						break;
 					}
 				}
-			}
-			
-			List<Receipt> requestedReceiptList = null;
-			List<Receipt> receiptArray= purchaseOrderService.getOrderReceipts(documentNumber, addressBook, documentType, po.getOrderCompany());
-			if(receiptArray != null) {
-				String[] idList = receiptList.split(",");
-				requestedReceiptList = new ArrayList<Receipt>();
-				for(Receipt r : receiptArray) {
-					if(Arrays.asList(idList).contains(String.valueOf(r.getId()))) {
-						requestedReceiptList.add(r);
-					}
-				}
-			}else {
-				return "No existen recibos por facturar.";
 			}
 			
 			String fechaFactura = inv.getFechaTimbrado();
@@ -1915,22 +1914,76 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				}
 			}
 			
+			//VALIDACIONES COMERCIALES
 			if(allRules) {
 				
 				String invCurrency = inv.getMoneda().trim();
 				double exchangeRate = inv.getTipoCambio();
 				
+				//----------------------------- Inicio: Validaciones de Orden/Multi-Orden -----------------------------
+				List<PurchaseOrder> poList = new ArrayList<PurchaseOrder>();
+		    	List<String> poNumbers = new ArrayList<String>();
+		    	List<String> poCompanies = new ArrayList<String>();
+		    	
+				if(isMultipleOrder) {
+					poList.addAll(poListMultiOrder);
+				} else {
+					poList.add(po);
+				}
+				
+				for(PurchaseOrder o : poList) {
+					
+					//Obtiene Números y Compañias de Ordenes de Compra
+	    			if(!poNumbers.contains(String.valueOf(o.getOrderNumber()))) {
+	    				poNumbers.add(String.valueOf(o.getOrderNumber()));
+	    			}
+	    			if(!poCompanies.contains(o.getOrderCompany())) {
+	    				poCompanies.add(o.getOrderCompany());
+	    			}
+	    			
+					//Validación de Moneda
+					String oCurr = "";
+					if("PME".equals(o.getCurrecyCode())) {//Código de Moneda de Pesos en JDE
+						oCurr = "MXN";
+					}else {
+						oCurr = o.getCurrecyCode();
+					}
+					
+					if(!invCurrency.equals(oCurr)) {
+						return "La moneda de la factura es " + invCurrency + " sin embargo, el código de moneda de la orden de compra " + o.getOrderNumber() + " es " + oCurr;
+					}
+				}
+				
+				//Validación de Compañía
+    			List<String> companyRfcList = new ArrayList<String>();
+				List<UDC> companyRfc = udcDao.searchBySystem("COMPANYRFC");
+				if(companyRfc != null) {
+					for(UDC udcrfc : companyRfc) {
+		    			if(!companyRfcList.contains(udcrfc.getUdcKey())) {
+		    				companyRfcList.add(udcrfc.getUdcKey());
+		    			}
+					}
+				}
+
+				if(!companyRfcList.containsAll(poCompanies)) {
+					return "La compañía de la factura no corresponde a la compañía de la orden de compra";
+				}
+				
+				//Valida si la moneda 'Domestica' de la Compañía es diferente a la moneda local
 				String domesticCurrency = AppConstants.DEFAULT_CURRENCY;
 				List<UDC> comUDCList =  udcService.searchBySystem("COMPANYDOMESTIC");
 				if(comUDCList != null && !comUDCList.isEmpty()) {
 					for(UDC company : comUDCList) {
-						if(company.getStrValue1().trim().equals(po.getOrderCompany().trim()) && !"".equals(company.getStrValue2().trim())) {
+						if(poCompanies.contains(company.getStrValue1().trim()) && !"".equals(company.getStrValue2().trim())) {
 							domesticCurrency = company.getStrValue2().trim();
 							break;
 						}
 					}
 				}
 				
+				//----------------------------- Fin: Validaciones de Orden/Multi-Orden -----------------------------
+				
+				//Valida si la moneda 'Domestica' del Proveedor es diferente a la moneda local
 				List<UDC> supDomUDCList =  udcService.searchBySystem("SUPPLIERDOMESTIC");
 				if(supDomUDCList != null && !supDomUDCList.isEmpty()) {
 					for(UDC supplier : supDomUDCList) {
@@ -1952,17 +2005,6 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					if(exchangeRate == 0) {
 						return "La moneda de la factura es " + invCurrency + " sin embargo, no está definido un tipo de cambio.";
 					}
-				}
-				
-				//ValidaciÃ³n de Moneda
-				String oCurr = "";
-				if("PME".equals(po.getCurrecyCode())) {//CÃ³digo de Moneda de Pesos en JDE
-					oCurr = "MXN";
-				}else {
-					oCurr = po.getCurrecyCode();
-				}
-				if(!invCurrency.equals(oCurr)) {
-					return "La moneda de la factura es " + invCurrency + " sin embargo, el código de moneda de la orden de compra es " + oCurr;
 				}
 				
 				//ValidaciÃ³n de AÃ±o Actual
@@ -2039,7 +2081,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			    	
 						 EmailServiceAsync emailAsyncSup = new EmailServiceAsync();
 						 emailAsyncSup.setProperties(
-									AppConstants.EMAIL_INVOICE_REJECTED + " " + po.getOrderNumber() ,
+									AppConstants.EMAIL_INVOICE_REJECTED + " " + String.join(", ", poNumbers),
 									AppConstants.EMAIL_NO_COMPLIANCE_INVOICE_SUPPLIER_NOTIF + inv.getUuid() + "<br /> <br />" + AppConstants.ETHIC_CONTENT,
 									s.getEmailSupplier());
 							emailAsyncSup.setMailSender(mailSenderObj);
@@ -2074,26 +2116,6 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				}
 				if(!receptorValido) {
 					return "El RFC receptor " + inv.getRfcReceptor() + " no está permitido para la carga de facturas.";
-				}
-				
-				//ValidaciÃ³n de CompaÃ±Ã­a
-				boolean companyRfcIsValid = false;
-				List<UDC> companyRfc = udcDao.searchBySystem("COMPANYRFC");
-				if(companyRfc != null) {
-					for(UDC udcrfc : companyRfc) {
-						String cRfc = udcrfc.getStrValue1();
-						String cRfcCompany = udcrfc.getUdcKey();
-						if(cRfc.equals(inv.getRfcReceptor())) {
-							if(cRfcCompany.equals(po.getCompanyKey())) {
-								companyRfcIsValid = true;
-								break;
-							}
-						}
-					}
-				}
-
-				if(!companyRfcIsValid) {
-					return "La compañía de la factura no corresponde a la compañía de la orden de compra";
 				}
 
 				//ValidaciÃ³n de USO CFDI
@@ -2404,27 +2426,14 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 		return "";
 	}
 
-	public String saveInvoiceFromOrder(FileUploadBean uploadItem, PurchaseOrder po, String receiptList, InvoiceDTO inv, String tipoComprobante) {
-		
-		try {			
+	public String saveInvoiceFromOrder(FileUploadBean uploadItem, PurchaseOrder po, String receiptList, InvoiceDTO inv, String tipoComprobante) {		
+		try {
+			List<Receipt> requestedReceiptList = purchaseOrderService.getOrderReceiptsByIds(receiptList);
 			Supplier supplier = supplierService.searchByAddressNumber(po.getAddressNumber());
-			
-			List<Receipt> requestedReceiptList = null;
-			List<Receipt> receiptArray= purchaseOrderService.getOrderReceipts(po.getOrderNumber(), po.getAddressNumber(), po.getOrderType(), po.getOrderCompany());
-			if(receiptArray != null) {
-				String[] idList = receiptList.split(",");
-				requestedReceiptList = new ArrayList<Receipt>();
-				for(Receipt r : receiptArray) {
-					if(Arrays.asList(idList).contains(String.valueOf(r.getId()))) {
-						requestedReceiptList.add(r);
-					}
-				}
-			}
-			
-			String fechaFactura = inv.getFechaTimbrado();
-			fechaFactura = fechaFactura.replace("T", " ");
 			SimpleDateFormat sdf = new SimpleDateFormat(TIMESTAMP_DATE_PATTERN);
+			String fechaFactura = inv.getFechaTimbrado().replace("T", " ");
 			Date invDate = null;
+			
 			try {
 				invDate = sdf.parse(fechaFactura);
 			}catch(Exception e) {
@@ -2477,6 +2486,11 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			o.setOrderCompany(po.getOrderCompany());
 			o.setOrderNumber(po.getOrderNumber());
 			o.setOrderType(po.getOrderType());
+			o.setMultiOrder(false);
+			o.setMultiOrderCompany("");
+			o.setMultiOrderNumber("");
+			o.setMultiOrderType("");
+			o.setMultiOrderIds("");
 			o.setApprovalStatus(AppConstants.STATUS_INPROCESS);
 			o.setApprovalStep(AppConstants.STATUS_APPROVALFIRSTSTEP);
 			o.setCurrentApprover(firstApprover);
@@ -2654,6 +2668,293 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			//NotificaciÃ³n Aprobador
 			EmailServiceAsync emailAsyncSup1 = new EmailServiceAsync();
 			emailAsyncSup1.setProperties(AppConstants.EMAIL_INV_ACCPET_BUYER + po.getOrderNumber(),
+					this.stringUtils.prepareEmailContent(String.format(AppConstants.FISCAL_DOC_MAIL_MSJ_FAC_COMP,
+							new Object[] {inv.getFolio(), inv.getUuid(), supplier.getRazonSocial(), AppConstants.EMAIL_PORTAL_LINK })),
+					firstApproverEmail);
+			emailAsyncSup1.setMailSender(this.mailSenderObj);
+			Thread emailThreadSup1 = new Thread(emailAsyncSup1);
+			emailThreadSup1.start();
+		} catch (Exception e) {
+			log4j.error("Exception" , e);
+			e.printStackTrace();
+			return "Ocurrió un error al guardar los archivos de la factura.";
+		}
+		
+		return "";
+	}
+	
+	public String saveInvoiceFromMultiOrder(FileUploadBean uploadItem, List<PurchaseOrder> poList, String receiptList, InvoiceDTO inv, String tipoComprobante, String addressNumber) {
+		try {
+			List<Receipt> requestedReceiptList = purchaseOrderService.getOrderReceiptsByIds(receiptList);
+			Supplier supplier = supplierService.searchByAddressNumber(addressNumber);
+			SimpleDateFormat sdf = new SimpleDateFormat(TIMESTAMP_DATE_PATTERN);
+			String fechaFactura = inv.getFechaTimbrado().replace("T", " ");
+			List<String> poCompanies = new ArrayList<String>();
+	    	List<String> poNumbers = new ArrayList<String>();
+	    	List<String> poTypes = new ArrayList<String>();
+	    	List<String> poIds = new ArrayList<String>();
+	    	
+    		for(PurchaseOrder o : poList) {
+    			if(!poCompanies.contains(o.getOrderCompany())) {
+    				poCompanies.add(o.getOrderCompany());
+    			}
+    			if(!poNumbers.contains(String.valueOf(o.getOrderNumber()))) {
+    				poNumbers.add(String.valueOf(o.getOrderNumber()));
+    			}
+    			if(!poTypes.contains(o.getOrderType())) {
+    				poTypes.add(o.getOrderType());
+    			}
+    			if(!poIds.contains(String.valueOf(o.getId()))) {
+    				poIds.add(String.valueOf(o.getId()));
+    			}
+    		}
+
+    		Date invDate = null;
+			try {
+				invDate = sdf.parse(fechaFactura);
+			}catch(Exception e) {
+				log4j.error("Exception" , e);
+				e.printStackTrace();
+			}
+			
+			String firstApprover = "";
+			String firstApproverEmail = "";
+
+			UDC firstApproverUser = udcDao.searchBySystemAndKey("APPROVERINV", "FIRST_APPROVER");
+			if(firstApproverUser != null && firstApproverUser.getStrValue1() != null && !firstApproverUser.getStrValue1().trim().isEmpty()) {
+				firstApprover = firstApproverUser.getStrValue1();			
+				Users u = usersService.searchCriteriaUserName(firstApprover);
+				if(u != null) {
+					firstApproverEmail = u.getEmail();
+				}
+			}
+
+			//Fecha de Vencimiento
+			//Date estimatedPaymentDate = this.getEstimatedPaymentDate(supplier); //Se calcula en la Ãºltima aprobaciÃ³n
+			
+			FiscalDocuments o = new FiscalDocuments();
+			o.setAccountingAccount("");
+			o.setGlOffset("");
+			o.setTaxCode(supplier.getTaxRate()); 			
+			o.setCurrencyMode("MXN".equals(inv.getMoneda()) ? AppConstants.CURRENCY_MODE_DOMESTIC : AppConstants.CURRENCY_MODE_FOREIGN);			
+			o.setPaymentTerms(supplier.getDiasCredito());
+			o.setSupplierName(supplier.getName());
+			o.setImpuestos(inv.getTotalImpuestos());
+			o.setFolio(inv.getFolio()!=null?inv.getFolio():"");
+			o.setSerie(inv.getSerie()!=null?inv.getSerie():"");
+			o.setUuidFactura(inv.getUuid());
+			o.setType("E".equals(inv.getTipoComprobante()) ? AppConstants.NC_FIELD_UDC:AppConstants.INVOICE_FIELD_UDC);
+			o.setAddressNumber(addressNumber);
+			o.setRfcEmisor(inv.getRfcEmisor());
+			o.setStatus(AppConstants.STATUS_INPROCESS);
+			o.setSubtotal(inv.getSubTotal());
+			o.setAmount(inv.getTotal());
+			o.setMoneda(inv.getMoneda());
+			o.setCurrencyCode(inv.getMoneda());
+			o.setInvoiceDate(inv.getFechaTimbrado());
+			o.setDescuento(inv.getDescuento());
+			o.setImpuestos(inv.getImpuestos());
+			o.setRfcReceptor(inv.getRfcReceptor());
+			o.setMetodoPago(inv.getMetodoPago());
+			o.setFormaPago(inv.getFormaPago());
+			//o.setEstimatedPaymentDate(estimatedPaymentDate); //Se calcula en la Ãºltima aprobaciÃ³n
+			o.setInvoiceUploadDate(new Date());
+			o.setOrderCompany("");
+			o.setOrderNumber(0);
+			o.setOrderType("Multi-Orden");
+			o.setMultiOrder(true);
+			o.setMultiOrderCompany(String.join(",", poCompanies));
+			o.setMultiOrderNumber(String.join(",", poNumbers));
+			o.setMultiOrderType(String.join(",", poTypes));
+			o.setMultiOrderIds(String.join(",", poIds));
+			o.setApprovalStatus(AppConstants.STATUS_INPROCESS);
+			o.setApprovalStep(AppConstants.STATUS_APPROVALFIRSTSTEP);
+			o.setCurrentApprover(firstApprover);
+			o.setEmailApprover(firstApproverEmail);
+			o.setNextApprover("");
+			o.setInvoiceType(AppConstants.INV_TYPE_RECEIPT);
+			o.setResponsibleUser1(firstApprover);
+			fiscalDocumentDao.saveDocument(o);
+			
+			for(Receipt r :requestedReceiptList) {
+				r.setInvDate(invDate);
+				r.setFolio(inv.getFolio());
+				r.setSerie(inv.getSerie());
+				r.setUuid(inv.getUuid());
+				//r.setEstPmtDate(estimatedPaymentDate); //Se calcula en la Ãºltima aprobaciÃ³n
+				r.setUploadInvDate(new Date());
+				r.setStatus(AppConstants.STATUS_OC_PENDING);
+				r.setFormaPago(inv.getFormaPago());
+				r.setMetodoPago(inv.getMetodoPago());
+			}
+			purchaseOrderService.updateReceipts(requestedReceiptList);
+			
+			//Recorre Ordenes de Compra
+			for(PurchaseOrder po : poList) {
+				
+				//Actualiza Orden de Compra
+				po.setInvoiceAmount(po.getInvoiceAmount() + inv.getTotal());
+				po.setOrderStauts(AppConstants.STATUS_OC_PENDING);
+				po.setInvoiceUploadDate(invDate);
+				po.setSentToWns(null);
+				//po.setEstimatedPaymentDate(estimatedPaymentDate); //Se calcula en la Ãºltima aprobaciÃ³n
+				if(AppConstants.ORDER_TYPE_WITHOUT_RECEIPTS.equals(po.getOrderType())) {
+					po.setInvDate(invDate);
+					po.setFolio(inv.getFolio());
+					po.setSerie(inv.getSerie());
+					po.setInvoiceUuid(inv.getUuid());
+					po.setInvoiceUploadDate(new Date());
+					po.setFormaPago(inv.getFormaPago());
+					po.setMetodoPago(inv.getMetodoPago());		
+				}
+				purchaseOrderService.updateOrders(po);
+				
+				//Guardar Documentos		
+				//XML Factura
+				String ct = uploadItem.getFile().getContentType();		
+				UserDocument doc = new UserDocument(); 		
+				doc.setAddressBook(po.getAddressNumber());
+				doc.setDocumentNumber(po.getOrderNumber());
+				doc.setDocumentType(po.getOrderType());
+				doc.setContent(uploadItem.getFile().getBytes());
+				doc.setType(ct.trim());
+				doc.setName(uploadItem.getFile().getOriginalFilename());
+				doc.setSize(uploadItem.getFile().getSize());
+				doc.setStatus(true);
+				doc.setAccept(true);
+				doc.setFiscalType(tipoComprobante);
+				doc.setType("text/xml");
+				doc.setFolio(inv.getFolio()!=null?inv.getFolio():"");
+				doc.setSerie(inv.getSerie()!=null?inv.getSerie():"");
+				doc.setUuid(inv.getUuid());
+				doc.setUploadDate(new Date());
+				doc.setFiscalRef(0);
+				doc.setDescription("Multi-Orden");
+				documentsDao.saveDocuments(doc);
+				
+				//PDF Factura
+				doc = new UserDocument(); 
+				doc.setAddressBook(po.getAddressNumber());
+				doc.setDocumentNumber(po.getOrderNumber());
+				doc.setDocumentType(po.getOrderType());
+				doc.setContent(uploadItem.getFileTwo().getBytes());
+				doc.setType(uploadItem.getFileTwo().getContentType().trim());
+				doc.setName(uploadItem.getFileTwo().getOriginalFilename());
+				doc.setSize(uploadItem.getFileTwo().getSize());
+				doc.setStatus(true);
+				doc.setAccept(true);
+				doc.setFiscalType(tipoComprobante);
+				doc.setType("application/pdf");
+				doc.setFolio(inv.getFolio()!=null?inv.getFolio():"");
+				doc.setSerie(inv.getSerie()!=null?inv.getSerie():"");
+				doc.setUuid(inv.getUuid());
+				doc.setUploadDate(new Date());
+				doc.setFiscalRef(0);
+				doc.setDescription("Multi-Orden");
+				documentsDao.saveDocuments(doc);
+				
+				//Evidencia de Sello de OC
+				if(uploadItem.getFileThree().getSize() > 0) {
+					doc = new UserDocument(); 
+					doc.setAddressBook(po.getAddressNumber());
+					doc.setDocumentNumber(po.getOrderNumber());
+					doc.setDocumentType(po.getOrderType());
+					doc.setContent(uploadItem.getFileThree().getBytes());
+					doc.setType(uploadItem.getFileThree().getContentType().trim());
+					doc.setName(uploadItem.getFileThree().getOriginalFilename());
+					doc.setSize(uploadItem.getFileThree().getSize());
+					doc.setStatus(true);
+					doc.setAccept(true);
+					doc.setFiscalType("EvidenciaOC");
+					doc.setFolio(inv.getFolio()!=null?inv.getFolio():"");
+					doc.setSerie(inv.getSerie()!=null?inv.getSerie():"");
+					doc.setUuid(inv.getUuid());
+					doc.setUploadDate(new Date());
+					doc.setFiscalRef(0);
+					doc.setDescription("Multi-Orden");
+					documentsDao.saveDocuments(doc);	
+				}
+				
+				//Anexo 1 (Opcional)
+				if(uploadItem.getFileFour().getSize() > 0) {
+					doc = new UserDocument(); 
+					doc.setAddressBook(po.getAddressNumber());
+					doc.setDocumentNumber(po.getOrderNumber());
+					doc.setDocumentType(po.getOrderType());
+					doc.setContent(uploadItem.getFileFour().getBytes());
+					doc.setType(uploadItem.getFileFour().getContentType().trim());
+					doc.setName(uploadItem.getFileFour().getOriginalFilename());
+					doc.setSize(uploadItem.getFileFour().getSize());
+					doc.setStatus(true);
+					doc.setAccept(true);
+					doc.setFiscalType("Anexo");
+					doc.setFolio(inv.getFolio()!=null?inv.getFolio():"");
+					doc.setSerie(inv.getSerie()!=null?inv.getSerie():"");
+					doc.setUuid(inv.getUuid());
+					doc.setUploadDate(new Date());
+					doc.setFiscalRef(0);
+					doc.setDescription("Multi-Orden");
+					documentsDao.saveDocuments(doc);
+				}
+				
+				//Anexo 2 (Opcional)
+				if(uploadItem.getFileFive().getSize() > 0) {
+					doc = new UserDocument(); 
+					doc.setAddressBook(po.getAddressNumber());
+					doc.setDocumentNumber(po.getOrderNumber());
+					doc.setDocumentType(po.getOrderType());
+					doc.setContent(uploadItem.getFileFive().getBytes());
+					doc.setType(uploadItem.getFileFive().getContentType().trim());
+					doc.setName(uploadItem.getFileFive().getOriginalFilename());
+					doc.setSize(uploadItem.getFileFive().getSize());
+					doc.setStatus(true);
+					doc.setAccept(true);
+					doc.setFiscalType("Anexo");
+					doc.setFolio(inv.getFolio()!=null?inv.getFolio():"");
+					doc.setSerie(inv.getSerie()!=null?inv.getSerie():"");
+					doc.setUuid(inv.getUuid());
+					doc.setUploadDate(new Date());
+					doc.setFiscalRef(0);
+					doc.setDescription("Multi-Orden");
+					documentsDao.saveDocuments(doc);
+				}
+				
+				//Anexo 3 (Opcional)
+				if(uploadItem.getFileSix().getSize() > 0) {
+					doc = new UserDocument(); 
+					doc.setAddressBook(po.getAddressNumber());
+					doc.setDocumentNumber(po.getOrderNumber());
+					doc.setDocumentType(po.getOrderType());
+					doc.setContent(uploadItem.getFileSix().getBytes());
+					doc.setType(uploadItem.getFileSix().getContentType().trim());
+					doc.setName(uploadItem.getFileSix().getOriginalFilename());
+					doc.setSize(uploadItem.getFileSix().getSize());
+					doc.setStatus(true);
+					doc.setAccept(true);
+					doc.setFiscalType("Anexo");
+					doc.setFolio(inv.getFolio()!=null?inv.getFolio():"");
+					doc.setSerie(inv.getSerie()!=null?inv.getSerie():"");
+					doc.setUuid(inv.getUuid());
+					doc.setUploadDate(new Date());
+					doc.setFiscalRef(0);
+					doc.setDescription("Multi-Orden");
+					documentsDao.saveDocuments(doc);
+				}
+			}
+			
+			//NotificaciÃ³n Proveedor		
+			EmailServiceAsync emailAsyncSup = new EmailServiceAsync();
+			emailAsyncSup.setProperties(AppConstants.EMAIL_INV_ACCPET_BUYER + String.join(", ", poNumbers),
+					this.stringUtils.prepareEmailContent(String.format(AppConstants.FISCAL_DOC_MAIL_MSJ_FAC_PROV,
+							new Object[] {inv.getFolio(), inv.getUuid(), AppConstants.EMAIL_PORTAL_LINK, inv.getFolio(), inv.getUuid(), AppConstants.EMAIL_PORTAL_LINK})),
+					supplier.getEmailSupplier());
+			emailAsyncSup.setMailSender(this.mailSenderObj);
+			Thread emailThreadSup = new Thread(emailAsyncSup);
+			emailThreadSup.start();
+			
+			//NotificaciÃ³n Aprobador
+			EmailServiceAsync emailAsyncSup1 = new EmailServiceAsync();
+			emailAsyncSup1.setProperties(AppConstants.EMAIL_INV_ACCPET_BUYER + String.join(", ", poNumbers),
 					this.stringUtils.prepareEmailContent(String.format(AppConstants.FISCAL_DOC_MAIL_MSJ_FAC_COMP,
 							new Object[] {inv.getFolio(), inv.getUuid(), supplier.getRazonSocial(), AppConstants.EMAIL_PORTAL_LINK })),
 					firstApproverEmail);

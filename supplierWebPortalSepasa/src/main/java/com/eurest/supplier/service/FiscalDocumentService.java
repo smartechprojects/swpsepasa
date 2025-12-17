@@ -10,11 +10,13 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -1730,16 +1732,33 @@ public class FiscalDocumentService {
 			SimpleDateFormat simpleDateFormatEPD = new SimpleDateFormat("dd-MM-yyyy");
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			String now = simpleDateFormat.format(new Date());
-			DataAudit dataAudit = new DataAudit();
-			Date currentDate = new Date();			
+			Date currentDate = new Date();
+			String orderNumberStr = "";
 			
 			FiscalDocuments o = fiscalDocumentDao.getById(requestId);
 			Supplier s = supplierService.searchByAddressNumber(o.getAddressNumber());
-	    	PurchaseOrder po = purchaseOrderService.searchbyOrderAndAddressBookAndCompany(o.getOrderNumber(), o.getAddressNumber(), o.getOrderType(), o.getOrderCompany());
-	    	List<Receipt> receiptList = purchaseOrderService.getReceiptsByUUID(o.getUuidFactura());
+			
+        	//-------------------------------------------------------
+        	//Nuevo Flujo para Multi-Orden
+        	//-------------------------------------------------------
+			List<PurchaseOrder> poList = new ArrayList<PurchaseOrder>();
+			if(o.isMultiOrder()) {
+				orderNumberStr = o.getMultiOrderNumber().replace(",", ", ");
+				List<PurchaseOrder> oList = purchaseOrderService.getPurchaseOrderByIds(o.getMultiOrderIds());
+				if(oList != null && !oList.isEmpty()) {
+					poList.addAll(oList);
+				}
+				
+			} else {
+				orderNumberStr = String.valueOf(o.getOrderNumber());
+				PurchaseOrder po = purchaseOrderService.searchbyOrderAndAddressBookAndCompany(o.getOrderNumber(), o.getAddressNumber(), o.getOrderType(), o.getOrderCompany());
+				if(po != null) {
+					poList.add(po);
+				}
+			}
 			
 	    	//if(o != null && s != null && po != null && receiptList != null && !receiptList.isEmpty()) {
-	    	if(o != null && s != null && po != null) {	
+	    	if(o != null && s != null && poList != null && !poList.isEmpty()) {	
 				String completeNameUsr = "";				
 				Users aUser = usersService.getByUserName(usr);
 				if(aUser != null) {
@@ -1817,73 +1836,81 @@ public class FiscalDocumentService {
 									}
 								}							
 					        	fiscalDocumentDao.updateDocument(o);
-
+					        	
 								//-------------------------------------------------------
 								//Actualizar Registros de Orden de Compra y Recibos
 								//-------------------------------------------------------
-								//Fecha de Vencimiento JSC: A solicitud de SEPASA, se tomará de JDE en línea.
-								//Date estimatedPaymentDate = documentsService.getEstimatedPaymentDate(s);
-					        	//po.setEstimatedPaymentDate(estimatedPaymentDate);
-					        	po.setOrderStauts(AppConstants.STATUS_OC_INVOICED);								
-								purchaseOrderService.updateOrders(po);
+					        	for(PurchaseOrder po : poList) {
+					        		
+									//Fecha de Vencimiento JSC: A solicitud de SEPASA, se tomará de JDE en línea.
+									//Date estimatedPaymentDate = documentsService.getEstimatedPaymentDate(s);
+						        	//po.setEstimatedPaymentDate(estimatedPaymentDate);
+						        	po.setOrderStauts(AppConstants.STATUS_OC_INVOICED);								
+									purchaseOrderService.updateOrders(po);
+									
+									List<Receipt> receiptList = purchaseOrderService.getOrderReceiptsByOrderAndUuid(po.getAddressNumber(), po.getOrderNumber(), po.getOrderType(), po.getOrderCompany(), o.getUuidFactura());
+									if(receiptList != null) {
+										for(Receipt r :receiptList) {
+											//r.setEstPmtDate(estimatedPaymentDate);
+											r.setStatus(AppConstants.STATUS_OC_INVOICED);
+										}
+										purchaseOrderService.updateReceipts(receiptList);	
+									}
+						        	
+									//-------------------------------------------------------
+									//Registrar datos de auditoría
+									//-------------------------------------------------------
+									DataAudit dataAudit = new DataAudit();
+									dataAudit.setAction("InvoiceApproval");
+							    	dataAudit.setAddressNumber(s.getAddresNumber());
+							    	dataAudit.setCreationDate(currentDate);
+							    	dataAudit.setDocumentNumber(null);
+							    	dataAudit.setIp(request.getRemoteAddr());
+							    	dataAudit.setMethod("updateDocument");
+							    	dataAudit.setModule(AppConstants.FISCALDOCUMENT_MODULE);    	
+							    	dataAudit.setOrderNumber(String.valueOf(po.getOrderNumber()));
+							    	dataAudit.setUuid(o.getUuidFactura());
+							    	dataAudit.setStep(AppConstants.FINAL_STEP);
+							    	dataAudit.setMessage("Invoice Approval Successful");
+							    	dataAudit.setNotes(notes);
+							    	dataAudit.setStatus(AppConstants.FISCAL_DOC_APPROVED);
+							    	dataAudit.setUser(usr);
+							    	dataAuditService.save(dataAudit);
+							    	
+							    	//-------------------------------------------------------
+							    	//ENVIO A JDE
+							    	//-------------------------------------------------------
+									
+							    	if (receiptList != null && !receiptList.isEmpty()) {
+										if (domesticCurrency.equals(o.getCurrencyCode())) {
+											eDIService.createNewVoucher(po, inv, 0, s, receiptList,
+													AppConstants.NN_MODULE_VOUCHER);
+										} else {
+											ForeingInvoice fi = new ForeingInvoice();
+											fi.setSerie(inv.getSerie());
+											fi.setFolio(inv.getFolio());
+											fi.setUuid(inv.getUuid());
+											fi.setExpeditionDate(inv.getFechaTimbrado());
+											eDIService.createNewForeignVoucher(po, fi, 0, s, receiptList,
+													AppConstants.NN_MODULE_VOUCHER);
+										}
+									}else {
+										if(domesticCurrency.equals(o.getCurrencyCode())) {
+											eDIService.createNewVoucherWithoutReceipt(po, inv, 0, s, new ArrayList<Receipt>(), AppConstants.NN_MODULE_VOUCHER);
+										} else {
+											ForeingInvoice fi = new ForeingInvoice();
+											fi.setSerie(inv.getSerie());
+											fi.setFolio(inv.getFolio());
+											fi.setUuid(inv.getUuid());
+											fi.setExpeditionDate(inv.getFechaTimbrado());
+											eDIService.createNewForeignVoucherWithoutReceipt(po, fi, 0, s, new ArrayList<Receipt>(), AppConstants.NN_MODULE_VOUCHER);
+										}
+									}	
+								}
 								
-								for(Receipt r :receiptList) {
-									//r.setEstPmtDate(estimatedPaymentDate);
-									r.setStatus(AppConstants.STATUS_OC_INVOICED);
-								}
-								purchaseOrderService.updateReceipts(receiptList);
-					        	
-								//-------------------------------------------------------
-								//Registrar datos de auditoría
-								//-------------------------------------------------------
-					        	dataAudit.setAction("InvoiceApproval");
-						    	dataAudit.setAddressNumber(s.getAddresNumber());
-						    	dataAudit.setCreationDate(currentDate);
-						    	dataAudit.setDocumentNumber(null);
-						    	dataAudit.setIp(request.getRemoteAddr());
-						    	dataAudit.setMethod("updateDocument");
-						    	dataAudit.setModule(AppConstants.FISCALDOCUMENT_MODULE);    	
-						    	dataAudit.setOrderNumber(null);
-						    	dataAudit.setUuid(o.getUuidFactura());
-						    	dataAudit.setStep(AppConstants.FINAL_STEP);
-						    	dataAudit.setMessage("Invoice Approval Successful");
-						    	dataAudit.setNotes(notes);
-						    	dataAudit.setStatus(AppConstants.FISCAL_DOC_APPROVED);
-						    	dataAudit.setUser(usr);
-						    	dataAuditService.save(dataAudit);
-						    	
-						    	//-------------------------------------------------------
-						    	//ENVIO A JDE
-						    	//-------------------------------------------------------						    	
-								if (receiptList != null && !receiptList.isEmpty()) {
-									if (domesticCurrency.equals(o.getCurrencyCode())) {
-										eDIService.createNewVoucher(po, inv, 0, s, receiptList,
-												AppConstants.NN_MODULE_VOUCHER);
-									} else {
-										ForeingInvoice fi = new ForeingInvoice();
-										fi.setSerie(inv.getSerie());
-										fi.setFolio(inv.getFolio());
-										fi.setUuid(inv.getUuid());
-										fi.setExpeditionDate(inv.getFechaTimbrado());
-										eDIService.createNewForeignVoucher(po, fi, 0, s, receiptList,
-												AppConstants.NN_MODULE_VOUCHER);
-									}
-								}else {
-									if(domesticCurrency.equals(o.getCurrencyCode())) {
-										eDIService.createNewVoucherWithoutReceipt(po, inv, 0, s, new ArrayList<Receipt>(), AppConstants.NN_MODULE_VOUCHER);
-									} else {
-										ForeingInvoice fi = new ForeingInvoice();
-										fi.setSerie(inv.getSerie());
-										fi.setFolio(inv.getFolio());
-										fi.setUuid(inv.getUuid());
-										fi.setExpeditionDate(inv.getFechaTimbrado());
-										eDIService.createNewForeignVoucherWithoutReceipt(po, fi, 0, s, new ArrayList<Receipt>(), AppConstants.NN_MODULE_VOUCHER);
-									}
-								}
-						    	
 								//Email Proveedor
 				    			EmailServiceAsync emailAsyncSup = new EmailServiceAsync();
-				    			emailAsyncSup.setProperties(AppConstants.EMAIL_INV_ACCEPT_SUP + po.getOrderNumber(),
+				    			emailAsyncSup.setProperties(AppConstants.EMAIL_INV_ACCEPT_SUP + orderNumberStr,
 				    					this.stringUtils.prepareEmailContent(String.format(AppConstants.FISCAL_DOC_MAIL_MSJ_INVOICE_FOLIO,
 				    							new Object[] {o.getFolio(), o.getUuidFactura(), completeNameUsr, AppConstants.EMAIL_PORTAL_LINK,
 				    									o.getFolio(), o.getUuidFactura(), completeNameUsr, AppConstants.EMAIL_PORTAL_LINK})),
@@ -1904,7 +1931,8 @@ public class FiscalDocumentService {
 						//-------------------------------------------------------
 						//Actualizar Documentos
 						//-------------------------------------------------------
-						List<UserDocument> docs = documentsDao.searchCriteriaByUuidOnly(o.getUuidFactura());
+						String currentUuid = o.getUuidFactura();
+						List<UserDocument> docs = documentsDao.searchCriteriaByUuidOnly(currentUuid);
 						if(docs != null) {
 							for(UserDocument u : docs) {
 								u.setUuid(u.getUuid().concat("-REJECTED"));
@@ -1913,7 +1941,7 @@ public class FiscalDocumentService {
 						}
 						
 						if(AppConstants.STATUS_FACT_FOREIGN.equals(documentType)){
-							ForeignInvoiceTable foreign = purchaseOrderService.getForeignInvoiceFromUuid(o.getUuidFactura());
+							ForeignInvoiceTable foreign = purchaseOrderService.getForeignInvoiceFromUuid(currentUuid);
 							purchaseOrderService.deleteForeignInvoice(foreign);
 						}
 
@@ -1926,7 +1954,7 @@ public class FiscalDocumentService {
 			        	o.setStatus(AppConstants.FISCAL_DOC_REJECTED);
 					    o.setApprovalStatus(AppConstants.FISCAL_DOC_REJECTED);
 					    o.setApprovalStep(AppConstants.FINAL_STEP);
-					    o.setUuidFactura(o.getUuidFactura().concat("-REJECTED"));					    
+					    o.setUuidFactura(currentUuid.concat("-REJECTED"));					    
 					    o.setNotes((o.getNotes()!=null?o.getNotes():"") + now + " - RECHAZÓ: " + usr + " Escribió:<br>" + notes + "<br><br>");
 						if(o.getConcepts() != null) {
 							for(FiscalDocumentsConcept c : o.getConcepts()) {
@@ -1938,40 +1966,47 @@ public class FiscalDocumentService {
 						//-------------------------------------------------------
 						//Actualizar Registros de Orden de Compra y Recibos
 						//-------------------------------------------------------
-						po.setInvoiceAmount(po.getInvoiceAmount() - inv.getTotal());
-						if(AppConstants.ORDER_TYPE_WITHOUT_RECEIPTS.equals(po.getOrderType())) {
-			        		po.setOrderStauts(AppConstants.STATUS_OC_REQUESTED);
-			        		po.setInvDate(null);
-							po.setFolio(null);
-							po.setSerie(null);
-							po.setInvoiceUuid(null);
+			        	for(PurchaseOrder po : poList) {
+			        		
+							po.setInvoiceAmount(po.getInvoiceAmount() - inv.getTotal());
+							if(AppConstants.ORDER_TYPE_WITHOUT_RECEIPTS.equals(po.getOrderType())) {
+				        		po.setOrderStauts(AppConstants.STATUS_OC_REQUESTED);
+				        		po.setInvDate(null);
+								po.setFolio(null);
+								po.setSerie(null);
+								po.setInvoiceUuid(null);
+								po.setInvoiceUploadDate(null);
+								po.setFormaPago(null);
+								po.setMetodoPago(null);
+				        	}else {
+				        		po.setOrderStauts(AppConstants.STATUS_OC_APPROVED);
+				        	}	
 							po.setInvoiceUploadDate(null);
-							po.setFormaPago(null);
-							po.setMetodoPago(null);
-			        	}else {
-			        		po.setOrderStauts(AppConstants.STATUS_OC_APPROVED);
-			        	}	
-						po.setInvoiceUploadDate(null);
-						po.setEstimatedPaymentDate(null);
-						purchaseOrderService.updateOrders(po);
-						
-						for(Receipt r : receiptList) {
-							r.setInvDate(null);
-							r.setFolio(null);
-							r.setSerie(null);
-							r.setUuid(null);
-							r.setEstPmtDate(null);
-							r.setUploadInvDate(null);
-							r.setStatus(AppConstants.STATUS_OC_APPROVED);
-							r.setFormaPago(null);
-							r.setMetodoPago(null);
-						}
-						purchaseOrderService.updateReceipts(receiptList);
+							po.setEstimatedPaymentDate(null);
+							purchaseOrderService.updateOrders(po);
+							
+							List<Receipt> receiptList = purchaseOrderService.getOrderReceiptsByOrderAndUuid(po.getAddressNumber(), po.getOrderNumber(), po.getOrderType(), po.getOrderCompany(), currentUuid);
+							if(receiptList != null) {
+								for(Receipt r : receiptList) {
+									r.setInvDate(null);
+									r.setFolio(null);
+									r.setSerie(null);
+									r.setUuid(null);
+									r.setEstPmtDate(null);
+									r.setUploadInvDate(null);
+									r.setStatus(AppConstants.STATUS_OC_APPROVED);
+									r.setFormaPago(null);
+									r.setMetodoPago(null);
+								}
+								purchaseOrderService.updateReceipts(receiptList);	
+							}
+			        	}
 						
 						//-------------------------------------------------------
 						//Registrar datos de auditoría
 						//-------------------------------------------------------
-						dataAudit.setAction("InvoiceApproval");
+			        	DataAudit dataAudit = new DataAudit();
+			        	dataAudit.setAction("InvoiceApproval");
 				    	dataAudit.setAddressNumber(s.getAddresNumber());
 				    	dataAudit.setCreationDate(currentDate);
 				    	dataAudit.setDocumentNumber(null);
@@ -1979,7 +2014,7 @@ public class FiscalDocumentService {
 				    	dataAudit.setMethod("updateDocument");
 				    	dataAudit.setModule(AppConstants.FISCALDOCUMENT_MODULE);    	
 				    	dataAudit.setOrderNumber(null);
-				    	dataAudit.setUuid(o.getUuidFactura());
+				    	dataAudit.setUuid(currentUuid);
 				    	dataAudit.setStep(AppConstants.FINAL_STEP);
 				    	dataAudit.setMessage("Invoice Rejected Successful");
 				    	dataAudit.setNotes(notes);
@@ -1989,9 +2024,9 @@ public class FiscalDocumentService {
 				    	
 						//Notificación Proveedor
 						EmailServiceAsync emailAsyncSup = new EmailServiceAsync();
-		    			emailAsyncSup.setProperties(AppConstants.EMAIL_INV_REJECT_SUP + po.getOrderNumber(),
+		    			emailAsyncSup.setProperties(AppConstants.EMAIL_INV_REJECT_SUP + orderNumberStr,
 		    					this.stringUtils.prepareEmailContent(String.format(AppConstants.EMAIL_INVOICE_REJECTED_NOTIF_FOLIO,
-		    							new Object[] {o.getFolio(), o.getUuidFactura(), completeNameUsr, notes, AppConstants.EMAIL_PORTAL_LINK, o.getFolio(), o.getUuidFactura(), completeNameUsr, notes, AppConstants.EMAIL_PORTAL_LINK})),
+		    							new Object[] {o.getFolio(), currentUuid, completeNameUsr, notes, AppConstants.EMAIL_PORTAL_LINK, o.getFolio(), currentUuid, completeNameUsr, notes, AppConstants.EMAIL_PORTAL_LINK})),
 		    					s.getEmailSupplier());
 		    			emailAsyncSup.setMailSender(this.mailSenderObj);
 		    			Thread emailThreadSup = new Thread(emailAsyncSup);

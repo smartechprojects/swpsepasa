@@ -7,7 +7,8 @@ Ext.define('SupplierApp.controller.PurchaseOrder', {
             'purchaseOrder.DeliverPurchaseOrderGrid', 'purchaseOrder.DeliverPurchaseOrderPanel',
             'purchaseOrder.ComplementoPagoPanel','purchaseOrder.SelInvGrid','purchaseOrder.AcceptInvGrid','purchaseOrder.ForeignOrderForm',
             'purchaseOrder.ChangeBuyerGrid','paymentCalendar.PaymentCalendarGrid','purchaseOrder.LogDataGrid', 'purchaseOrder.LogDataPanel',
-            'receipt.ReceiptPanel','receipt.ReceiptGrid','receipt.ReceiptForm'],
+            'receipt.ReceiptPanel','receipt.ReceiptGrid','receipt.ReceiptForm',
+            'receipt.ReceiptMultiOrderPanel','receipt.ReceiptMultiOrderGrid','receipt.ReceiptMultiOrderForm'],
     refs: [{
         	ref: 'purchaseOrderForm',
         	selector: 'purchaseOrderForm'
@@ -53,6 +54,12 @@ Ext.define('SupplierApp.controller.PurchaseOrder', {
 	    },{
         	ref: 'receiptForm',
         	selector: 'receiptForm'
+	    },{
+        	ref: 'receiptMultiOrderGrid',
+        	selector: 'receiptMultiOrderGrid'
+	    },{
+        	ref: 'receiptMultiOrderForm',
+        	selector: 'receiptMultiOrderForm'
 	    }],
  
     init: function() {
@@ -61,6 +68,7 @@ Ext.define('SupplierApp.controller.PurchaseOrder', {
 		this.winLoadInv = null;
 		this.winLoadInvForeign = null;
 		this.receiptWindow=null;
+		this.receiptMultiOrderWindow=null;
 		this.receipOrderWindow=null;
 		this.gblMassiveLoadEx = null;
 		this.outSourcingWindow = null;
@@ -136,11 +144,15 @@ Ext.define('SupplierApp.controller.PurchaseOrder', {
 					},
 					'purchaseOrderGrid button[action=poLoadCompl]' : {
 						click : this.poLoadCompl
-					}/*,
+					},
+					'purchaseOrderGrid button[action=showReceiptsMultiOrder]' : {
+						click : this.showReceiptsMultiOrder
+					},
+					/*
 					'purchaseOrderDetailGrid' :{
 		                edit: this.afterGrupoEdit,
 		                canceledit: this.onCancelGrupoEdit
-		            }*/,
+		            }*/
 					'purchaseOrderDetailGrid button[action=updateOrder]' : {
 						click : this.updateOrder
 					},
@@ -197,6 +209,9 @@ Ext.define('SupplierApp.controller.PurchaseOrder', {
 					},
 					'#showCreditNotes' : {
 						"buttonclick" : this.showCreditNotes
+					},
+					'receiptMultiOrderForm button[action=uploadReceiptMultiOrderInvoice]' : {
+						click : this.uploadReceiptMultiOrderInvoice
 					},
 					'receiptForm button[action=uploadReceiptInvoice]' : {
 						click : this.uploadReceiptInvoice
@@ -339,6 +354,151 @@ Ext.define('SupplierApp.controller.PurchaseOrder', {
     	} else {
     		Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: SuppAppMsg.supplierMessage, msg: SuppAppMsg.purchaseOrderNoDocument  });
     	}
+    },
+    
+    showReceiptsMultiOrder: function(grid, record){
+    	var me = this;
+    	var grid = this.getPurchaseOrderGrid();
+    	var store = grid.getStore();
+    	var s = grid.getSelectionModel().getSelection();
+    	var selected = [];
+    	var selectedSuppliers = [];
+    	var selectedOrders = [];
+    	var selectedOrderCompanies = [];
+    	var selectedOrderTypes = [];
+    	var isUniqueSupplier = true;
+    	
+    	//var supNumber = Ext.getCmp('supNumber').getValue() == ''?'':Ext.getCmp('supNumber').getValue();
+    	//if(supNumber != ""){
+        	
+    		Ext.each(s, function (item) {
+        		selected.push(item.data.id);
+        		selectedSuppliers.push(item.data.addressNumber);
+        		
+        		if (!selectedOrders.includes(item.data.orderNumber)) {
+        			selectedOrders.push(item.data.orderNumber);
+        		}
+        		if (!selectedOrderCompanies.includes(item.data.orderCompany)) {
+        			selectedOrderCompanies.push(item.data.orderCompany);
+        		}
+        		if (!selectedOrderTypes.includes(item.data.orderType)) {
+        			selectedOrderTypes.push(item.data.orderType);
+        		}
+        	});
+        	
+        	if(selected.length > 0){
+        		//Proveedor
+        	    var supNumber = selectedSuppliers[0];
+        	    
+        	    Ext.each(selectedSuppliers, function (value) {
+        	        if (value !== supNumber) {
+        	        	isUniqueSupplier = false;
+        	            return false;
+        	        }
+        	    });
+        		
+        	    if(isUniqueSupplier == true){
+                	var box = Ext.MessageBox.wait(SuppAppMsg.supplierProcessRequest, SuppAppMsg.approvalExecution);
+                	
+            		Ext.Ajax.request({
+            		    url: 'supplier/getByAddressNumber.action',
+            		    method: 'POST',
+            		    params: {		    	
+            		    	addressNumber : supNumber
+            	        },
+            		    success: function(fp, o) {
+            		    	box.hide();
+            		    	var res = Ext.decode(fp.responseText);
+            		    	var sup = Ext.create('SupplierApp.model.Supplier',res.data);
+            		    	
+            		    	Ext.Ajax.request({
+            					url : 'receipt/getOrderReceiptsMultiOrder.action',
+            					method : 'GET',
+            						params : {
+            							addressBook: supNumber, 
+            							purchaseOrderIds: selected
+            						},
+            						success : function(response,opts) {
+            							var resp = Ext.decode(response.responseText);
+            							if(resp){
+            								var data = resp.data;
+            								me.receiptMultiOrderWindow = new Ext.Window({
+            						    		layout : 'fit',
+            						    		title : SuppAppMsg.purchaseReceipt,
+            						    		width : 1500,
+            						    		height : 500,
+            						    		modal : true,
+            						    		closeAction : 'destroy',
+            						    		resizable : true,
+            						    		minimizable : false,
+            						    		maximizable : false,
+            						    		plain : true,
+            						    		items : [ {
+            						    			xtype : 'receiptMultiOrderPanel',
+            						    			border : true,
+            						    			height : 415
+            						    		}  ]
+            						    	});
+            								var form = me.getReceiptMultiOrderForm().getForm();
+            						    	//form.loadRecord(record);
+            								form.findField('addressNumber').setValue(supNumber);
+            								form.findField('orderNumber').setValue(selectedOrders);
+            								form.findField('orderCompany').setValue(selectedOrderCompanies);
+            								form.findField('orderType').setValue(selectedOrderTypes);
+            								form.findField('optionMultiOrderIds').setValue(selected);
+            								form.findField('optionMultiOrderType').setValue('Factura');
+            								
+            						    	var g = me.getReceiptMultiOrderGrid();
+            						    	g.store.loadData([], false);
+            						    	g.getView().refresh();
+            						    	
+            						    	if(data && data.length > 0){
+                						    	for(var i = 0; i < data.length; i++){
+                						    		var r = Ext.create('SupplierApp.model.Receipt',data[i]);
+                						    		g.store.insert(i, r);
+                						    	}	
+            						    	}
+            						    	
+            						    	me.receiptMultiOrderWindow.show();
+            						    	Ext.getCmp('uploadReceiptMultiOrderInvoice').setVisible(true);
+            						    	Ext.getCmp('uploadReceiptMultiOrderCreditNote').setVisible(false);
+            						    	
+            						    	if(sup.data.outSourcing == true && sup.data.outSourcingAccept == true){
+            						    		Ext.getCmp('showOutSourcingMultiOrderWindow').setVisible(true);
+            						    		Ext.getCmp('uploadReceiptMultiOrderInvoice').setVisible(true);
+            						    	}
+            						    	
+//            								if(isValidSupplier == true) {
+//            									Ext.getCmp('uploadReceiptMultiOrderInvoiceZip').setVisible(true);
+//            								}								
+            							}					
+            							
+            							box.hide();
+            						},
+            						failure : function() {
+            							box.hide();
+            						}
+            					});
+            		    },  
+            	        failure: function(fp, o) {
+            	        	box.hide();
+            	        }
+            		});
+            		
+            	}else{
+            		Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: 'Error', msg: SuppAppMsg.purchaseOrdersMsg12  });
+            		return false;
+            	}
+        	    
+        	}else{
+        		Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: 'Error', msg: SuppAppMsg.purchaseOrdersMsg10  });
+        		return false;
+        	}
+        	
+    	//}else{
+    	//	Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: SuppAppMsg.supplierMsgValidationLoad, msg: SuppAppMsg.purchaseOrdersMsg11 });
+    	//}
+    	    
     },
     
     showReceipts: function(grid, record){
@@ -517,12 +677,280 @@ Ext.define('SupplierApp.controller.PurchaseOrder', {
 		});
     },
 
+    uploadReceiptMultiOrderInvoice : function(grid, rowIndex, colIndex, record) {
+    	var orderForm = this.getReceiptMultiOrderForm().getForm();
+    	var isHotelSupplier = false;
+        var me = this;
+    	var values = orderForm.getFieldValues();
+    	var grid = this.getReceiptMultiOrderGrid();
+    	var gridPO = this.getPurchaseOrderGrid();
+    	var store = grid.getStore();
+    	var s = grid.getSelectionModel().getSelection();
+    	var selected = [];
+    	
+    	Ext.each(s, function (item) {
+    		selected.push(item.data.id);
+    	});    	
+    	
+    	if(selected.length > 0){
+    		
+    		var idSelected = selected.toString();
+    		var box = Ext.MessageBox.wait(SuppAppMsg.supplierProcessRequest, SuppAppMsg.approvalExecution);
+    		Ext.Ajax.request({
+    		    url: 'supplier/getIsHotelSupplier.action',
+    		    method: 'POST',
+    		    params: {
+    		    	addressNumber : orderForm.findField('addressNumber').getValue()
+    	        },
+    		    success: function(fp, o) {
+					var res = Ext.decode(fp.responseText);
+	    		    me.isHotelSupplier = res.data;
+	        		Ext.Ajax.request({
+	        		    url: 'supplier/getByAddressNumber.action',
+	        		    method: 'POST',
+	        		    params: {
+	        		    	addressNumber : orderForm.findField('addressNumber').getValue()
+	        	        },
+	        		    success: function(fp, o) {
+	        		    	box.hide();
+	        		    	var res = Ext.decode(fp.responseText);
+	        		    	var sup = Ext.create('SupplierApp.model.Supplier',res.data);
+	        	    		if(sup.data.country == "MX"){
+	        			    	var filePanel = Ext.create(
+	        			    					'Ext.form.Panel',
+	        			    					{
+	        			    						width : 900,
+	        			    						items : [
+	    	    			    							{
+	        			    									xtype : 'textfield',
+	        			    									name : 'addressBook',
+	        			    									hidden : true,
+	        			    									value : orderForm.findField('addressNumber').getValue()
+	        			    								},{
+	        			    									xtype : 'textfield',
+	        			    									name : 'purchaseOrderIdList',
+	        			    									hidden : true,
+	        			    									value : orderForm.findField('optionMultiOrderIds').getValue()
+	        			    								},{
+	        			    									xtype : 'textfield',
+	        			    									name : 'receiptIdList',
+	        			    									hidden : true,
+	        			    									value : idSelected
+	        			    								},{
+	        			    									xtype : 'textfield',
+	        			    									name : 'tipoComprobante',
+	        			    									hidden : true,
+	        			    									value : 'Factura'
+	        			    								},{
+	        			    									xtype : 'filefield',
+	        			    									name : 'file',
+	        			    									fieldLabel : SuppAppMsg.purchaseFileXML + '*:',
+	        			    									labelWidth : 160,
+	        			    									msgTarget : 'side',
+	        			    									allowBlank : false,
+	        	    	    									labelAlign: 'right',
+	        	    	    									margin:'15 0 20 10',
+	        			    									anchor : '90%',
+	        			    									buttonText : SuppAppMsg.suppliersSearch
+	        			    										
+	        			    								},
+	        			    								{
+	        			    									xtype : 'filefield',
+	        			    									name : 'fileTwo',
+	        			    									fieldLabel : SuppAppMsg.purchaseInvoice + '(.pdf)*:',
+	        			    									labelWidth : 160,
+	        			    									msgTarget : 'side',
+	        			    									allowBlank : false,
+	        	    	    									labelAlign: 'right',
+	        	    	    									margin:'15 0 20 10',
+	        			    									anchor : '90%',
+	        			    									buttonText : SuppAppMsg.suppliersSearch,
+	        	    	    								} ,{
+	        	    	    									xtype : 'filefield',
+	        	    	    									name : 'fileThree',
+	        	    	    									fieldLabel : SuppAppMsg.purchaseEvidenceOCStamp + ' (pdf)*:',
+	        	    	    									labelWidth : 160,
+	        	    	    									msgTarget : 'side',
+	        	    	    									allowBlank : false,
+	        	    	    									labelAlign: 'right',
+	        	    	    									margin:'15 0 20 10',
+	        	    	    									anchor : '90%',
+	        	    	    									buttonText : SuppAppMsg.suppliersSearch
+	        	    	    								} ,{
+	        	    	    									xtype : 'filefield',
+	        	    	    									name : 'fileFour',
+	        	    	    									fieldLabel : SuppAppMsg.purchaseAnnexFile + ' 1',
+	        	    	    									labelWidth : 160,
+	        	    	    									msgTarget : 'side',
+	        	    	    									allowBlank : true, //Opcional
+	        	    	    									labelAlign: 'right',
+	        	    	    									margin:'15 0 20 10',
+	        	    	    									anchor : '90%',
+	        	    	    									buttonText : SuppAppMsg.suppliersSearch
+	        	    	    								} ,{
+	        	    	    									xtype : 'filefield',
+	        	    	    									name : 'fileFive',
+	        	    	    									fieldLabel : SuppAppMsg.purchaseAnnexFile + ' 2',
+	        	    	    									labelWidth : 160,
+	        	    	    									msgTarget : 'side',
+	        	    	    									allowBlank : true, //Opcional
+	        	    	    									labelAlign: 'right',
+	        	    	    									margin:'15 0 20 10',
+	        	    	    									anchor : '90%',
+	        	    	    									buttonText : SuppAppMsg.suppliersSearch
+	        	    	    								} ,{
+	        	    	    									xtype : 'filefield',
+	        	    	    									name : 'fileSix',
+	        	    	    									fieldLabel : SuppAppMsg.purchaseAnnexFile + ' 3',
+	        	    	    									labelWidth : 160,
+	        	    	    									msgTarget : 'side',
+	        	    	    									allowBlank : true, //Opcional
+	        	    	    									labelAlign: 'right',
+	        	    	    									margin:'15 0 20 10',
+	        	    	    									anchor : '90%',
+	        	    	    									buttonText : SuppAppMsg.suppliersSearch
+	        			    								}],
+	        			
+	        			    						buttons : [ {
+	        			    							text : SuppAppMsg.supplierLoad,
+	        			    							margin:'10 0 0 0',
+	        			    							handler : function() {
+	        			    								var form = this.up('form').getForm();
+	        			    								if (form.isValid()) {
+	        			    									form.submit({
+	        			    												url : 'uploadInvoiceFromReceiptMultiOrder.action',
+	        			    												waitMsg : SuppAppMsg.supplierLoadFile,
+	        			    												success : function(fp, o) {
+	        			    													var res = Ext.decode(o.response.responseText);
+	        			    													me.winLoadInv.destroy();
+	        			    													if(me.receiptMultiOrderWindow){
+	        			    														me.receiptMultiOrderWindow.close();
+	        			    													}
+	        			    													gridPO.store.load();
+	        			    													Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: SuppAppMsg.supplierMsgValidationLoad, msg:  SuppAppMsg.supplierLoadDocSucc});
+	        			    													
+	        			    												},       // If you don't pass success:true, it will always go here
+	        			    										        failure: function(fp, o) {
+	        			    										        	var res = o.response.responseText;
+	        			    										        	var result = Ext.decode(res);
+	        			    										        	var msgResp = result.message
+	        			    										        	
+	        			    										        	if(msgResp == "Error_1"){
+	        			    										        		Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: SuppAppMsg.supplierMsgValidationLoad, msg:  SuppAppMsg.fileUploadError1});
+	        			    										        	}else if(msgResp == "Error_2"){
+	        			    										        		Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: SuppAppMsg.supplierMsgValidationLoad, msg:  SuppAppMsg.fileUploadError2});
+	        			    										        	}else if(msgResp == "Error_3"){
+	        			    										        		Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: SuppAppMsg.supplierMsgValidationLoad, msg:  SuppAppMsg.fileUploadError3});
+	        			    										        	}else if(msgResp == "Error_4"){
+	        			    										        		Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: SuppAppMsg.supplierMsgValidationLoad, msg:  SuppAppMsg.fileUploadError4});
+	        			    										        	}else if(msgResp == "Error_5"){
+	        			    										        		Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: SuppAppMsg.supplierMsgValidationLoad, msg:  SuppAppMsg.fileUploadError5});
+	        			    										        	}else if(msgResp == "Error_6"){
+	        			    										        		Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: SuppAppMsg.supplierMsgValidationLoad, msg:  SuppAppMsg.fileUploadError6});
+	        			    										        	}else if(msgResp == "Error_7"){
+	        			    										        		Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: SuppAppMsg.supplierMsgValidationLoad, msg:  SuppAppMsg.fileUploadError7});
+	        			    										        	}else{
+	        			    										        		Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: SuppAppMsg.supplierMsgValidationLoad, msg:  msgResp});
+	        			    										        	}
+	        			    										        	
+	        			    										        	
+	        			    										        }
+	        			    											});
+	        			    								}
+	        			    							}
+	        			    						} ]
+	        			    					});
+	        			
+	        			    	me.winLoadInv = new Ext.Window({
+	        			    		layout : 'fit',
+	        			    		title : SuppAppMsg.purchaseUploadInvoice,
+	        			    		width : 600,
+	        			    		height : 350,
+	        			    		modal : true,
+	        			    		closeAction : 'destroy',
+	        			    		resizable : false,
+	        			    		minimizable : false,
+	        			    		maximizable : false,
+	        			    		plain : true,
+	        			    		items : [ filePanel ]
+	        			
+	        			    	});
+	        			    	me.winLoadInv.show();
+	        		
+	        			    }
+	        	    		/*
+	        	    		else if(sup.data.country != "" && sup.data.country != null){
+	    			    		me.winLoadInvForeign = new Ext.Window({
+	    				    		layout : 'fit',
+	    				    		title : SuppAppMsg.purchaseUploadInvoiceForeing,
+	    				    		width : 740,
+	    				    		height : 580,
+	    				    		modal : true,
+	    				    		closeAction : 'destroy',
+	    				    		resizable : false,
+	    				    		minimizable : false,
+	    				    		maximizable : false,
+	    				    		plain : true,
+	    				    		items : [ 
+	    				    				{
+	    				    				xtype:'foreignOrderForm'
+	    				    				} 
+	    				    			]
+	    				    	});
+	    			    		
+	    			        	var foreignForm = me.getForeignOrderForm().getForm();
+	    			        	foreignForm.setValues({
+	    			        		addressNumber: orderForm.findField('addressNumber').getValue(),
+	    			        		orderNumber: values.orderNumber,
+	    			        		orderType: values.orderType,
+	    			        		voucherType: 'Factura',
+	    			        		name:  sup.data.razonSocial,
+	    			        		taxId:  sup.data.taxId,
+	    			        		address: sup.data.calleNumero + ", " + sup.data.colonia + ", " + sup.data.delegacionMncipio + ", C.P. " + sup.data.codigoPostal,
+	    			        		country:  sup.data.country,
+	    			        		receiptIdList: idSelected,
+	    			        		foreignSubtotal:0,
+	    			        		//foreignSubtotal:receiptSubtotal,
+	    			        		attachmentFlag:''
+	    			        	});
+
+	    			        	setTimeout(function(){
+	    		
+	    			           },2000); //delay is in milliseconds 
+	    		
+	    			        	//foreignForm.findField('foreignSubtotal').setCurrencySymbol('$');
+	    			        	foreignForm.findField('foreignSubtotal').setFieldLabel(SuppAppMsg.purchaseTitle18);
+	    			        	foreignForm.findField('invoiceNumber').setFieldLabel(SuppAppMsg.invoiceNumber);
+	    			        	Ext.getCmp('sendForeignRecord').setText(SuppAppMsg.purchaseTitle24);
+	    		        		me.winLoadInvForeign.show();
+	        			    	}else{
+	        			    		Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: 'Error', msg:  SuppAppMsg.purchaseErrorNonSupplier});
+	        			    	}
+	        			    */
+	        		    },  
+	    		        failure: function(fp, o) {
+	    		        	box.hide();
+	    		        }
+	        		});
+    		    },  
+		        failure: function(fp, o) {
+		        	box.hide();
+		        }
+    		});
+    	}else{
+    		Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: 'Error', msg: SuppAppMsg.purchaseUploadBillErrorTitle  });
+    		return false;
+    	}
+ 	
+    },
+    
     uploadReceiptInvoice : function(grid, rowIndex, colIndex, record) {
     	var orderForm = this.getReceiptForm().getForm();
     	var isHotelSupplier = false;
         var me = this;
     	var values = orderForm.getFieldValues();
     	var grid = this.getReceiptGrid();
+    	var gridPO = this.getPurchaseOrderGrid();
     	var store = grid.getStore();
     	var s = grid.getSelectionModel().getSelection();    	
     	var selected = [];
@@ -677,6 +1105,7 @@ Ext.define('SupplierApp.controller.PurchaseOrder', {
 	        			    													if(me.receiptWindow){
 	        			    														me.receiptWindow.close();
 	        			    													}
+	        			    													gridPO.store.load();
 	        			    													Ext.MessageBox.alert({ maxWidth: 700, minWidth: 650, title: SuppAppMsg.supplierMsgValidationLoad, msg:  SuppAppMsg.supplierLoadDocSucc});
 	        			    													
 	        			    												},       // If you don't pass success:true, it will always go here

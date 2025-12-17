@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -107,6 +108,7 @@ public class FileUploadController {
 	private static final List<String> ALLOWED_FORMAT = Arrays.asList(new String[]{"doc","docx","xls","xlsx","pdf","jpg","jpeg","png","txt","gif"});
 	
 	private org.apache.log4j.Logger log4j = org.apache.log4j.Logger.getLogger(FileUploadController.class);
+
 	
 	 @RequestMapping(value = "/uploadInvoiceFromReceipt.action", method = RequestMethod.POST, produces = "text/plain;charset=UTF-8")
 	    public @ResponseBody String uploadInvoiceFromReceipt(FileUploadBean uploadItem, 
@@ -192,7 +194,9 @@ public class FileUploadController {
 																			   xmlString,
 																			   receiptIdList,
 																			   false,
-																			   0);
+																			   0,
+																			   false,
+																			   null);
 	                	
 	                	
 	                	if("".equals(res) || res.contains("DOC:")){
@@ -509,6 +513,155 @@ public class FileUploadController {
 
 	 }
 	
+	@RequestMapping(value = "/uploadInvoiceFromReceiptMultiOrder.action", method = RequestMethod.POST, produces = "text/plain;charset=UTF-8")
+	public @ResponseBody String uploadInvoiceFromReceiptMultiOrder(FileUploadBean uploadItem, BindingResult result,
+			String addressBook, String tipoComprobante, String purchaseOrderIdList, String receiptIdList, HttpServletResponse response) {
+
+		response.setContentType("text/html");
+		response.setCharacterEncoding("UTF-8");
+		JSONObject json = new JSONObject();
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
+				.getRequest();
+
+		String usr = auth.getName();
+		try {
+
+			if (result.hasErrors()) {
+				for (ObjectError error : result.getAllErrors()) {
+					System.err.println("Error: " + error.getCode() + " - " + error.getDefaultMessage());
+				}
+
+				json.put("success", false);
+				json.put("message", "Error_1");
+			}
+
+			InvoiceDTO inv = null;
+			String ct = uploadItem.getFile().getContentType();
+
+			if (uploadItem.getFileTwo() != null) {
+				String ctPdf = uploadItem.getFileTwo().getContentType();
+				if (!"application/pdf".equals(ctPdf)) {
+					json.put("success", false);
+					json.put("message", "Error_2");
+					return json.toString();
+				}
+			}
+
+			if (!AppConstants.OTHER_FIELD.equals(tipoComprobante)) {
+				if ("text/xml".equals(ct.trim())) {
+					inv = documentsService.getInvoiceXml(uploadItem);
+					if (inv != null) {
+						if (AppConstants.INVOICE_FIELD.equals(tipoComprobante)
+								&& !"I".equals(inv.getTipoComprobante())) {
+							json.put("success", false);
+							json.put("message", "Error_3");
+							return json.toString();
+						}
+
+						ByteArrayInputStream stream = new ByteArrayInputStream(uploadItem.getFile().getBytes());
+						String xmlContent = IOUtils.toString(stream, "UTF-8");
+						String source = takeOffBOM(IOUtils.toInputStream(xmlContent, "UTF-8"));
+						String xmlString = source.replace("?<?xml", "<?xml");
+						DataAudit dataAudit = new DataAudit();
+						Date currentDate = new Date();
+
+						// JSAAVEDRA: Validación Códigos SAT
+						Supplier s = supplierService.searchByAddressNumber(addressBook);
+						if (s != null && s.isOutSourcing()) {
+							String rOs = outSourcingService.validateInvoiceCodes(inv.getConcepto());
+							if (!"".equals(rOs)) {
+								json.put("success", false);
+								json.put("message", rOs);
+								return json.toString();
+							}
+						}
+
+						//Obtiene Ordenes de Compra y Recibos por Ids
+						List<PurchaseOrder> poSelectedList = purchaseOrderService.getPurchaseOrderByIds(purchaseOrderIdList);
+			    		List<Receipt> rList = purchaseOrderService.getOrderReceiptsByIds(receiptIdList);
+			    		List<String> poNumbers = new ArrayList<String>();
+			    		List<String> receiptNumbers = new ArrayList<String>();
+			    		List<PurchaseOrder> poList = new ArrayList<PurchaseOrder>();
+			    				
+			    		for(Receipt r : rList) {
+			    			if(!receiptNumbers.contains(String.valueOf(r.getDocumentNumber()))) {
+			    				receiptNumbers.add(String.valueOf(r.getDocumentNumber()));
+			    			}
+			    			
+			    			if(!poNumbers.contains(String.valueOf(r.getOrderNumber()))) {
+			    				poNumbers.add(String.valueOf(r.getOrderNumber()));
+			    			}
+			    		}
+
+			    		//Genera una nueva lista solo con las Ordenes de Compra que se utilizaran
+			    		for(PurchaseOrder o : poSelectedList) {
+			    			if(poNumbers.contains(String.valueOf(o.getOrderNumber()))) {
+			    				poList.add(o);
+			    			}
+			    		}
+			    		
+						//Validador de Carga con Multiples Ordenes
+						String res = documentsService.validateInvoiceFromOrder(inv, addressBook, 0, "", tipoComprobante, null, true, xmlString, receiptIdList, false, 0, true, poList);
+						if ("".equals(res) || res.contains("DOC:")) {
+							
+							res = documentsService.saveInvoiceFromMultiOrder(uploadItem, poList, receiptIdList, inv, tipoComprobante, addressBook);
+							if ("".equals(res)) {
+								
+								dataAudit.setAction("UploadInvoiceMultipleOrders");
+								dataAudit.setAddressNumber(addressBook);
+								dataAudit.setCreationDate(currentDate);
+								dataAudit.setDocumentNumber(String.join(", ", receiptNumbers));
+								dataAudit.setIp(request.getRemoteAddr());
+								dataAudit.setMessage("Uploaded Invoice For Multiple Orders Successful");
+								dataAudit.setMethod("uploadInvoiceFromReceiptMultiOrder");
+								dataAudit.setModule(AppConstants.SALESORDER_MODULE);
+								dataAudit.setNotes(null);
+								dataAudit.setOrderNumber(String.join(", ", poNumbers));
+								dataAudit.setStatus(AppConstants.STATUS_COMPLETE);
+								dataAudit.setStep(null);
+								dataAudit.setUser(usr);
+								dataAudit.setUuid(inv.getUuid());
+								dataAuditService.save(dataAudit);
+
+								json.put("success", true);
+								json.put("message", inv.getMessage());
+								json.put("orderNumber", String.join(", ", poNumbers));
+								json.put("orderType", "");
+								json.put("addressNumber", addressBook);
+								json.put("docNbr", res);
+								json.put("uuid", inv.getUuid());
+							} else {
+								json.put("success", false);
+								json.put("message", res);
+							}
+
+						} else {
+							json.put("success", false);
+							json.put("message", res);
+						}
+
+					} else {
+						json.put("success", false);
+						json.put("message", "Error_4");
+					}
+
+				} else {
+					json.put("success", false);
+					json.put("message", "Error_5");
+				}
+			}
+			return json.toString();
+
+		} catch (Exception e) {
+			log4j.error("Exception", e);
+			e.printStackTrace();
+			json.put("success", false);
+			json.put("message", "Ha ocurrido un error inesperado: " + e.getMessage());
+		}
+		return json.toString();
+	}
+		
     @RequestMapping(value = "/upload.action", method = RequestMethod.POST)
     @ResponseBody public String create(FileUploadBean uploadItem, 
     								   BindingResult result, 
@@ -657,7 +810,9 @@ public class FileUploadController {
 																		   xmlString,
 																		   "",
 																		   false,
-																		   0);
+																		   0,
+																		   false,
+																		   null);
                 	
                 	
                 	if("".equals(res) || res.contains("DOC:")){
@@ -1516,7 +1671,9 @@ public class FileUploadController {
 																	   xmlContent,
 																	   "",
 																	   false,
-																	   0);
+																	   0,
+																	   false,
+																	   null);
             	if("".equals(res)){
                 	doc.setStatus(true);
                 	doc.setAccept(true);

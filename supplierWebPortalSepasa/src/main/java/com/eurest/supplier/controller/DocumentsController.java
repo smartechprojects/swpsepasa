@@ -26,11 +26,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.eurest.supplier.dto.UserDocumentDTO;
 import com.eurest.supplier.model.FiscalDocuments;
 import com.eurest.supplier.model.FiscalDocumentsConcept;
+import com.eurest.supplier.model.PurchaseOrder;
 import com.eurest.supplier.model.SupplierDocument;
 import com.eurest.supplier.model.UserDocument;
 import com.eurest.supplier.service.DocumentsService;
 import com.eurest.supplier.service.FiscalDocumentService;
 import com.eurest.supplier.service.JDERestService;
+import com.eurest.supplier.service.PurchaseOrderService;
 import com.eurest.supplier.service.UsersService;
 import com.eurest.supplier.util.AppConstants;
  
@@ -43,6 +45,9 @@ private DocumentsService documentsService;
 
 @Autowired
 private FiscalDocumentService fiscalDocumentService;
+
+@Autowired
+private PurchaseOrderService purchaseOrderService;
 
 @Autowired
 private UsersService usersService;
@@ -116,15 +121,31 @@ public @ResponseBody Map<String, Object> view(@RequestParam int start,
 		List<UserDocument> list = null;
 		int total = 0;
 		try {
-			list = documentsService.searchCriteriaByRefFiscal(addresNumber, uuid);
+			
+			FiscalDocuments o = fiscalDocumentService.getFiscalDocumentsByUuid(uuid);
+			if(o != null && o.isMultiOrder() && o.getMultiOrderIds() != null && !o.getMultiOrderIds().isEmpty()) {
+				//Busca documentos Multi-Orden (Solo muestra los documentos de una orden para evitar repetidos)
+				String[] oData = o.getMultiOrderIds().split(",");
+				if(oData.length > 0) {
+					PurchaseOrder po = purchaseOrderService.getOrderById(Integer.parseInt(oData[0]));
+					if(po != null) {
+						list = documentsService.searchCriteriaByOrderAndUuid(addresNumber, po.getOrderNumber(), po.getOrderType(), uuid);
+					}
+				}
+			}
+			
+			//Flujo Normal
+			if(!(list != null && !list.isEmpty())) {
+				list = documentsService.searchCriteriaByRefFiscal(addresNumber, uuid);	
+			}
+			
 			if(list != null){
 				total = list.size();
 				for(UserDocument ud : list){
 					ud.setContent(null);
 				}
 			}
-			else
-				total = 0;
+			
 			return mapOK(list, total);
 		} catch (Exception e) {
 			log4j.error("Exception" , e);

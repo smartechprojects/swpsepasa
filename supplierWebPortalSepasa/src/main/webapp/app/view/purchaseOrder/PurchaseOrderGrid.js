@@ -6,7 +6,19 @@
 	border:false,
 	selModel: {
         checkOnly: true,
-        mode: 'SIMPLE'
+        mode: 'SIMPLE',
+        showHeaderCheckbox: false,
+        injectCheckbox:'first',
+        renderer: function(value, metaData, record, rowIndex, colIndex, store, view) {
+	            metaData.tdCls = Ext.baseCSSPrefix + 'grid-cell-special';
+	            var html = '';
+	            if (record.data.orderType == 'P0' || record.data.orderStauts == 'OC SOLICITADA' || record.data.orderStauts == 'OC RECIBIDA' || record.data.orderStauts == 'OC CANCELADA') {
+	                html = '';
+	            } else {
+	            	html = '<div class="' + Ext.baseCSSPrefix + 'grid-row-checker"> </div>';
+	            }
+	            return html;
+        }
     },
     selType: 'checkboxmodel',
 	cls: 'extra-large-cell-grid',  
@@ -494,6 +506,16 @@
 			            iconCls: 'icon-accept',
 			            action:'poPaymentCalendar',
 			            hidden:role == 'ROLE_ADMIN' || role == 'ROLE_MANAGER' ?false:true,
+			            cls: 'buttonStyle',
+			            margin:'2 20 5 10'
+					},
+					{
+		           		xtype:'button',
+			            text: SuppAppMsg.purchaseTitle63,
+			            iconCls: 'icon-accept',//iconCls: 'icon-save',
+			            action:'showReceiptsMultiOrder',
+			            id:'showReceiptsMultiOrder',
+			            itemId:'showReceiptsMultiOrder',
 			            cls: 'buttonStyle',
 			            margin:'2 20 5 10'
 					},

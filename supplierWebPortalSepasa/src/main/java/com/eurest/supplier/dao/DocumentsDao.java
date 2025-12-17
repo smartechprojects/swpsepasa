@@ -229,6 +229,19 @@ public class DocumentsDao{
 				);
 		return (List<UserDocument>) criteria.list();
 	}
+	
+	public List<UserDocument> searchCriteriaByOrderAndUuid(String addressNumber, int orderNumber, String orderType, String uuid){
+		Session session = this.sessionFactory.getCurrentSession();
+		Criteria criteria = session.createCriteria(UserDocument.class);
+		criteria.add(
+				Restrictions.conjunction()
+				.add(Restrictions.eq("addressBook", addressNumber))
+				.add(Restrictions.eq("documentNumber", orderNumber))
+				.add(Restrictions.eq("documentType", orderType))
+				.add(Restrictions.eq("uuid", uuid))
+				);
+		return (List<UserDocument>) criteria.list();
+	}
 
 	@SuppressWarnings("unchecked")
 	public List<UserDocument> searchCriteriaByDescription(String addressNumber, String description){

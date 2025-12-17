@@ -172,7 +172,8 @@ public class OutSourcingService {
 			String res = documentsService.validateInvoiceFromOrder(inv, addressBook, documentNumber, 
 					                                                documentType, tipoComprobante, po, 
 					                                                false, xmlContent, 
-					                                                receiptList, true, 0);
+					                                                receiptList, true, 0,
+					        										false, null);
 			
 			if("".equals(res)) {
 				Supplier s = supplierService.searchByAddressNumber(addressBook);
