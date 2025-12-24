@@ -129,9 +129,9 @@ public class JDERestService {
 	public void getOrderPayments() {
 		try {			
 			for(int i=0; i<=20; i++) {
-				int start = i*500;
+				int start = i*250;
 
-				List<FiscalDocuments> fdList = fiscalDocumentService.getPaymentPendingFiscalDocuments(start, 500);
+				List<FiscalDocuments> fdList = fiscalDocumentService.getPaymentPendingFiscalDocuments(start, 250);
 				List<FiscalDocuments> fdUpdateList = new ArrayList<FiscalDocuments>();
 				
 				if (fdList != null) {
