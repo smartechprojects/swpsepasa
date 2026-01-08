@@ -996,59 +996,80 @@ public class JDERestService {
 			if(poList != null) {
 				for(PurchaseOrder po : poList) {
 					if(!po.isOrderEvidence() && po.getEvidenceAttemps() < WS_MAX_DOWNLOAD_ATTEMPTS) {
-						//JSON
-						POFileRequestDTO request = new POFileRequestDTO();
-						request.setNit_proveedor(po.getAddressNumber() + WS_SUPPLIER_SUFFIX);
-						request.setNumero_oc(String.valueOf(po.getOrderNumber()));
-						request.setTipo_oc(po.getOrderType());
-						request.setEmpresa_oc(po.getOrderCompany());
 						
-			            ObjectMapper objectMapper = new ObjectMapper();
-			            String jsonRequest = objectMapper.writeValueAsString(request);
+						String nitSupplier = "";
 						
-			            //Consulta WS del Orquestador de JDE de HAME
-						Map<String, byte[]> result = httpRequestService.httpPostFileDownload(AppConstants.URL_JDE_ORCHESTRATOR_HOST + AppConstants.URL_JDE_ORCHESTRATOR_PO_FILE_API,
-								jsonRequest,
-								AppConstants.URL_JDE_ORCHESTRATOR_WS_USR,
-								new String(Base64.getDecoder().decode(AppConstants.URL_JDE_ORCHESTRATOR_WS_PWD.replace("==a20$", ""))));
+						//TEST
+						nitSupplier = po.getAddressNumber() + WS_SUPPLIER_SUFFIX;
 						
-						//Guarda Documentos
-						if(result != null && !result.isEmpty()) {
-							result.forEach((name, file) -> {
-								if(name != null && file != null) {
-									String newFileName = "Evidencia_OC_" + po.getOrderNumber() + "_Proveedor_" + po.getAddressNumber() + ".pdf"; 
-									UserDocument doc = new UserDocument(); 
-									doc.setAddressBook(po.getAddressNumber());
-									doc.setDocumentNumber(po.getOrderNumber());
-									doc.setDocumentType(po.getOrderType());
-									doc.setContent(file);
-									doc.setName(newFileName);
-									doc.setDescription(name);
-									doc.setSize(file.length);
-									doc.setStatus(true);
-									doc.setAccept(true);
-									doc.setFiscalType("EvidenciaJDE");
-									doc.setType("application/pdf");
-									doc.setFolio(null);
-									doc.setSerie(null);
-									doc.setUuid(null);
-									doc.setUploadDate(new Date());
-									doc.setFiscalRef(0);
-									documentsService.save(doc, null, null);
-									
-									//Actualizar Registro de OC
-									po.setOrderEvidence(true);
-									po.setPortalOrderEvidenceDate(new Date());
-									po.setEvidenceAttemps(po.getEvidenceAttemps() + 1);
-									purchaseOrderService.updateOrders(po);
-								}
-							});						
-						} else {
-							//Actualizar Registro de OC con Documento No Encontrado
-							po.setOrderEvidence(false);
-							po.setPortalOrderEvidenceDate(new Date());
-							po.setEvidenceAttemps(po.getEvidenceAttemps() + 1);
-							purchaseOrderService.updateOrders(po);
+						//PROD - JSC: Se solicitó mandar el RFC al momento de subir el cambio a producción.
+						/*
+						Supplier s = supplierService.searchByAddressNumber(po.getAddressNumber());
+						if(s != null) {
+							if(s.getCountry() != null && "MX".equals(s.getCountry().trim()) && s.getRfc() != null && !s.getRfc().trim().isEmpty()) {
+								nitSupplier = s.getRfc().trim();	//Proveedor Nacionales
+							} else if(s.getTaxId() != null && !s.getTaxId().trim().isEmpty()) {
+								nitSupplier = s.getTaxId().trim();	//Proveedor Extranjeros
+							}	
+						}
+						*/
+						
+						if(!"".equals(nitSupplier)) {
+							
+							//JSON
+							POFileRequestDTO request = new POFileRequestDTO();
+							request.setNit_proveedor(nitSupplier);
+							request.setNumero_oc(String.valueOf(po.getOrderNumber()));
+							request.setTipo_oc(po.getOrderType());
+							request.setEmpresa_oc(po.getOrderCompany());
+							
+				            ObjectMapper objectMapper = new ObjectMapper();
+				            String jsonRequest = objectMapper.writeValueAsString(request);
+							
+				            //Consulta WS del Orquestador de JDE de HAME
+							Map<String, byte[]> result = httpRequestService.httpPostFileDownload(AppConstants.URL_JDE_ORCHESTRATOR_HOST + AppConstants.URL_JDE_ORCHESTRATOR_PO_FILE_API,
+									jsonRequest,
+									AppConstants.URL_JDE_ORCHESTRATOR_WS_USR,
+									new String(Base64.getDecoder().decode(AppConstants.URL_JDE_ORCHESTRATOR_WS_PWD.replace("==a20$", ""))));
+							
+							//Guarda Documentos
+							if(result != null && !result.isEmpty()) {
+								result.forEach((name, file) -> {
+									if(name != null && file != null) {
+										String newFileName = "Evidencia_OC_" + po.getOrderNumber() + "_Proveedor_" + po.getAddressNumber() + ".pdf"; 
+										UserDocument doc = new UserDocument(); 
+										doc.setAddressBook(po.getAddressNumber());
+										doc.setDocumentNumber(po.getOrderNumber());
+										doc.setDocumentType(po.getOrderType());
+										doc.setContent(file);
+										doc.setName(newFileName);
+										doc.setDescription(name);
+										doc.setSize(file.length);
+										doc.setStatus(true);
+										doc.setAccept(true);
+										doc.setFiscalType("EvidenciaJDE");
+										doc.setType("application/pdf");
+										doc.setFolio(null);
+										doc.setSerie(null);
+										doc.setUuid(null);
+										doc.setUploadDate(new Date());
+										doc.setFiscalRef(0);
+										documentsService.save(doc, null, null);
+										
+										//Actualizar Registro de OC
+										po.setOrderEvidence(true);
+										po.setPortalOrderEvidenceDate(new Date());
+										po.setEvidenceAttemps(po.getEvidenceAttemps() + 1);
+										purchaseOrderService.updateOrders(po);
+									}
+								});						
+							} else {
+								//Actualizar Registro de OC con Documento No Encontrado
+								po.setOrderEvidence(false);
+								po.setPortalOrderEvidenceDate(new Date());
+								po.setEvidenceAttemps(po.getEvidenceAttemps() + 1);
+								purchaseOrderService.updateOrders(po);
+							}
 						}
 					}
 				}
