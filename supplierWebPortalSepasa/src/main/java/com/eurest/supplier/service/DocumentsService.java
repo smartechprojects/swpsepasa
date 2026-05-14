@@ -2320,6 +2320,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 				//ValidaciÃ³n de Retenciones
 				String tipoValidacion ="";
 				
+				/*
 				if(isRetainedValidationOn) {
 					double totalImporteMayorRetenido = 0;
 					double totalImporteMenorRetenido = 0;
@@ -2360,6 +2361,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 						return "El total de los impuestos retenidos de su CFDI es " + currencyFormat.format(retainedTotalAmount) + " no coincide con el total de las retenciones del recibo seleccionado. Favor de verificarlo con el comprador.";
 					}
 				}
+				*/
 
 				//ValidaciÃ³n de Montos
 				double totalImporteMayor = 0;
