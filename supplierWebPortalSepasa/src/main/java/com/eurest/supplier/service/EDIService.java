@@ -497,7 +497,7 @@ public Supplier disable(Supplier s) {
     return true;
   }
   
-  public synchronized String createNewVoucher(PurchaseOrder o, InvoiceDTO inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType){		
+  public synchronized String createNewVoucher(PurchaseOrder o, InvoiceDTO inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType, boolean isMultiOrder){		
 		VoucherHeaderDTO recHdr = new VoucherHeaderDTO();
 		NextNumber nn = null;
 		int julianEPD = 0;
@@ -669,11 +669,15 @@ public Supplier disable(Supplier s) {
 		vs.setSWVINV(recHdr.getSYVINV());
 		recHdr.setVoucherSummaryDTO(vs);
 
+		if(isMultiOrder) {
+			this.updateMultiOrderFields(recHdr);
+		}
+		
 		String resp = jDERestService.sendVoucher(recHdr);
 		return resp;
 	}
   
-  public synchronized String createNewVoucherWithoutReceipt(PurchaseOrder o, InvoiceDTO inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType){		
+  public synchronized String createNewVoucherWithoutReceipt(PurchaseOrder o, InvoiceDTO inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType, boolean isMultiOrder){		
 		VoucherHeaderDTO recHdr = new VoucherHeaderDTO();
 		NextNumber nn = null;
 		int julianEPD = 0;
@@ -845,11 +849,15 @@ public Supplier disable(Supplier s) {
 		vs.setSWVINV(recHdr.getSYVINV());
 		recHdr.setVoucherSummaryDTO(vs);
 
+		if(isMultiOrder) {
+			this.updateMultiOrderFields(recHdr);
+		}
+		
 		String resp = jDERestService.sendVoucherWithoutReceipt(recHdr);
 		return resp;
 	}
   
-  public synchronized String createNewForeignVoucher(PurchaseOrder o, ForeingInvoice inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType){
+  public synchronized String createNewForeignVoucher(PurchaseOrder o, ForeingInvoice inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType, boolean isMultiOrder){
 		
 		VoucherHeaderDTO recHdr = new VoucherHeaderDTO();
 		NextNumber nn = null;
@@ -1036,12 +1044,16 @@ public Supplier disable(Supplier s) {
 		vs.setSWURRF(recHdr.getSYURRF());
 		vs.setSWVINV(recHdr.getSYVINV());
 		recHdr.setVoucherSummaryDTO(vs);
+	
+		if(isMultiOrder) {
+			this.updateMultiOrderFields(recHdr);
+		}
 		
 		String resp = jDERestService.sendVoucher(recHdr);
 		return resp;
 	}
   
-  public synchronized String createNewForeignVoucherWithoutReceipt(PurchaseOrder o, ForeingInvoice inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType){
+  public synchronized String createNewForeignVoucherWithoutReceipt(PurchaseOrder o, ForeingInvoice inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType, boolean isMultiOrder){
 		
 		VoucherHeaderDTO recHdr = new VoucherHeaderDTO();
 		NextNumber nn = null;
@@ -1228,6 +1240,10 @@ public Supplier disable(Supplier s) {
 		vs.setSWURRF(recHdr.getSYURRF());
 		vs.setSWVINV(recHdr.getSYVINV());
 		recHdr.setVoucherSummaryDTO(vs);
+		
+		if(isMultiOrder) {
+			this.updateMultiOrderFields(recHdr);
+		}
 		
 		String resp = jDERestService.sendVoucherWithoutReceipt(recHdr);
 		return resp;
@@ -1741,7 +1757,7 @@ public Supplier disable(Supplier s) {
       bj.setVoucherEntries(vtList);
       bj.setJournalEntries(jeList);
       this.jDERestService.sendJournalEntries(bj);
-      createNewVoucher(po, inv, nextNbr, s, null, AppConstants.NN_MODULE_VOUCHER);
+      createNewVoucher(po, inv, nextNbr, s, null, AppConstants.NN_MODULE_VOUCHER, false);
       nextNbr++;
       nn.setNexInt(nextNbr);
       this.nextNumberService.updateNextNumber(nn);
@@ -1910,6 +1926,47 @@ private String getAlphaNumericString(int n) {
           .charAt(index));
     } 
     return sb.toString();
+  }
+  
+  private void updateMultiOrderFields(VoucherHeaderDTO recHdr) {
+	try {
+		log4j.info("Multiorden: Se limpian campos.");
+		
+		//Cabecero con datos de la OC vacíos
+		recHdr.setSYURAB("6");
+		recHdr.setSYEKCO("");
+		recHdr.setSYDOCO(0);
+		recHdr.setSYDCTO("");
+		recHdr.setSYKCOO("");
+		recHdr.setSYSFXO("");
+		recHdr.setSYSHAN(0);
+		recHdr.setSYMCU("");
+		recHdr.setCRRM("");
+		recHdr.setSYCRCD("");
+		recHdr.setSYCRR(0);
+
+		//Detalle con URAB en 6
+		if(recHdr.getVoucherDetailDTO() != null && !recHdr.getVoucherDetailDTO().isEmpty()) {
+			for(VoucherDetailDTO d : recHdr.getVoucherDetailDTO()) {
+				d.setURAB(6);
+				d.setSZURAB("6");
+			}
+		}
+		
+		//Summary con datos de la OC vacíos
+		recHdr.getVoucherSummaryDTO().setSWURAB("6");
+		recHdr.getVoucherSummaryDTO().setSWEKCO("");
+		recHdr.getVoucherSummaryDTO().setSWKCO("");
+		recHdr.getVoucherSummaryDTO().setSWKCOO("");
+		recHdr.getVoucherSummaryDTO().setSWDOCO(0);
+		recHdr.getVoucherSummaryDTO().setSWDCTO("");
+		recHdr.getVoucherSummaryDTO().setSWSFXO("");
+		recHdr.getVoucherSummaryDTO().setCRRM("");
+		recHdr.getVoucherSummaryDTO().setSWCRCD("");
+		recHdr.getVoucherSummaryDTO().setSWCRR(0);
+		
+	} catch (Exception e) {
+	}
   }
 
 }

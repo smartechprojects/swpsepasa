@@ -1840,6 +1840,7 @@ public class FiscalDocumentService {
 								//-------------------------------------------------------
 								//Actualizar Registros de Orden de Compra y Recibos
 								//-------------------------------------------------------
+					        	List<Receipt> receiptNewList = new ArrayList<Receipt>(); 
 					        	for(PurchaseOrder po : poList) {
 					        		
 									//Fecha de Vencimiento JSC: A solicitud de SEPASA, se tomará de JDE en línea.
@@ -1849,12 +1850,14 @@ public class FiscalDocumentService {
 									purchaseOrderService.updateOrders(po);
 									
 									List<Receipt> receiptList = purchaseOrderService.getOrderReceiptsByOrderAndUuid(po.getAddressNumber(), po.getOrderNumber(), po.getOrderType(), po.getOrderCompany(), o.getUuidFactura());
-									if(receiptList != null) {
+									if(receiptList != null && !receiptList.isEmpty()) {
 										for(Receipt r :receiptList) {
 											//r.setEstPmtDate(estimatedPaymentDate);
 											r.setStatus(AppConstants.STATUS_OC_INVOICED);
 										}
-										purchaseOrderService.updateReceipts(receiptList);	
+										purchaseOrderService.updateReceipts(receiptList);
+										
+										receiptNewList.addAll(receiptList);
 									}
 						        	
 									//-------------------------------------------------------
@@ -1876,38 +1879,38 @@ public class FiscalDocumentService {
 							    	dataAudit.setStatus(AppConstants.FISCAL_DOC_APPROVED);
 							    	dataAudit.setUser(usr);
 							    	dataAuditService.save(dataAudit);
-							    	
-							    	//-------------------------------------------------------
-							    	//ENVIO A JDE
-							    	//-------------------------------------------------------
-									
-							    	if (receiptList != null && !receiptList.isEmpty()) {
-										if (domesticCurrency.equals(o.getCurrencyCode())) {
-											eDIService.createNewVoucher(po, inv, 0, s, receiptList,
-													AppConstants.NN_MODULE_VOUCHER);
-										} else {
-											ForeingInvoice fi = new ForeingInvoice();
-											fi.setSerie(inv.getSerie());
-											fi.setFolio(inv.getFolio());
-											fi.setUuid(inv.getUuid());
-											fi.setExpeditionDate(inv.getFechaTimbrado());
-											eDIService.createNewForeignVoucher(po, fi, 0, s, receiptList,
-													AppConstants.NN_MODULE_VOUCHER);
-										}
-									}else {
-										if(domesticCurrency.equals(o.getCurrencyCode())) {
-											eDIService.createNewVoucherWithoutReceipt(po, inv, 0, s, new ArrayList<Receipt>(), AppConstants.NN_MODULE_VOUCHER);
-										} else {
-											ForeingInvoice fi = new ForeingInvoice();
-											fi.setSerie(inv.getSerie());
-											fi.setFolio(inv.getFolio());
-											fi.setUuid(inv.getUuid());
-											fi.setExpeditionDate(inv.getFechaTimbrado());
-											eDIService.createNewForeignVoucherWithoutReceipt(po, fi, 0, s, new ArrayList<Receipt>(), AppConstants.NN_MODULE_VOUCHER);
-										}
-									}	
 								}
 								
+						    	//-------------------------------------------------------
+						    	//ENVIO A JDE
+						    	//-------------------------------------------------------
+					        	
+					        	//JSC: Nuevo flujo para Multi-Ordenes
+					        	PurchaseOrder po = poList.get(0); //Obtiene la Órden de Compra
+						    	if (receiptNewList != null && !receiptNewList.isEmpty()) {
+									if (domesticCurrency.equals(o.getCurrencyCode())) {
+										eDIService.createNewVoucher(po, inv, 0, s, receiptNewList, AppConstants.NN_MODULE_VOUCHER, o.isMultiOrder());
+									} else {
+										ForeingInvoice fi = new ForeingInvoice();
+										fi.setSerie(inv.getSerie());
+										fi.setFolio(inv.getFolio());
+										fi.setUuid(inv.getUuid());
+										fi.setExpeditionDate(inv.getFechaTimbrado());
+										eDIService.createNewForeignVoucher(po, fi, 0, s, receiptNewList, AppConstants.NN_MODULE_VOUCHER, o.isMultiOrder());
+									}
+								}else {
+									if(domesticCurrency.equals(o.getCurrencyCode())) {
+										eDIService.createNewVoucherWithoutReceipt(po, inv, 0, s, new ArrayList<Receipt>(), AppConstants.NN_MODULE_VOUCHER, o.isMultiOrder());
+									} else {
+										ForeingInvoice fi = new ForeingInvoice();
+										fi.setSerie(inv.getSerie());
+										fi.setFolio(inv.getFolio());
+										fi.setUuid(inv.getUuid());
+										fi.setExpeditionDate(inv.getFechaTimbrado());
+										eDIService.createNewForeignVoucherWithoutReceipt(po, fi, 0, s, new ArrayList<Receipt>(), AppConstants.NN_MODULE_VOUCHER, o.isMultiOrder());
+									}
+								}
+						    	
 								//Email Proveedor
 				    			EmailServiceAsync emailAsyncSup = new EmailServiceAsync();
 				    			emailAsyncSup.setProperties(AppConstants.EMAIL_INV_ACCEPT_SUP + orderNumberStr,
@@ -2282,7 +2285,7 @@ public class FiscalDocumentService {
 							PurchaseOrder po = purchaseOrderDao.searchbyOrderAndAddressBookAndType(u.getDocumentNumber(),u.getAddressBook(), u.getDocumentType());
 							log4j.info(u.getDocumentType());
 							if(po != null) {
-								eDIService.createNewVoucher(po, inv, 0, s, receipts, AppConstants.NN_MODULE_VOUCHER);
+								eDIService.createNewVoucher(po, inv, 0, s, receipts, AppConstants.NN_MODULE_VOUCHER, false);
 								log4j.info("Sent: " + inv.getUuid());
 							}
 							}catch(Exception e){
@@ -2335,7 +2338,7 @@ public class FiscalDocumentService {
 				
 				PurchaseOrder po = purchaseOrderDao.searchbyOrderAndAddressBook(rec.getOrderNumber(), rec.getAddressNumber(), rec.getOrderType());
 				
-				String resp = "DOC:" + eDIService.createNewForeignVoucher(po, fi, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER);
+				String resp = "DOC:" + eDIService.createNewForeignVoucher(po, fi, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER, false);
 				log4j.info(resp);
 			}	
 		}

@@ -3392,14 +3392,14 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 		if(sendVoucher) {
 			try {				
 				if(domesticCurrency.equals(invCurrency)) {
-					resp = "DOC:" + eDIService.createNewVoucher(po, inv, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER);
+					resp = "DOC:" + eDIService.createNewVoucher(po, inv, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER, false);
 				} else {
 					ForeingInvoice fi = new ForeingInvoice();
 					fi.setSerie(inv.getSerie());
 					fi.setFolio(inv.getFolio());
 					fi.setUuid(inv.getUuid());
 					fi.setExpeditionDate(inv.getFechaTimbrado());
-					resp = "DOC:" + eDIService.createNewForeignVoucher(po, fi, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER);
+					resp = "DOC:" + eDIService.createNewForeignVoucher(po, fi, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER, false);
 				}
 				
 				EmailServiceAsync emailAsyncSup = new EmailServiceAsync();
@@ -3529,14 +3529,14 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 			if(sendVoucher) {
 				
 				if(AppConstants.DEFAULT_CURRENCY.equals(inv.getMoneda())) {
-					resp = "DOC:" + eDIService.createNewVoucher(po, inv, 0, s, null, AppConstants.NN_MODULE_VOUCHER);
+					resp = "DOC:" + eDIService.createNewVoucher(po, inv, 0, s, null, AppConstants.NN_MODULE_VOUCHER, false);
 				} else {
 					ForeingInvoice fi = new ForeingInvoice();
 					fi.setSerie(inv.getSerie());
 					fi.setFolio(inv.getFolio());
 					fi.setUuid(inv.getUuid());
 					fi.setExpeditionDate(inv.getFechaTimbrado());
-					resp = "DOC:" + eDIService.createNewForeignVoucher(po, fi, 0, s, null, AppConstants.NN_MODULE_VOUCHER);
+					resp = "DOC:" + eDIService.createNewForeignVoucher(po, fi, 0, s, null, AppConstants.NN_MODULE_VOUCHER, false);
 				}
 			}
 		}
@@ -3902,14 +3902,14 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					
 					String resp;
 					if(AppConstants.DEFAULT_CURRENCY.equals(inv.getMoneda())) {
-						resp = "DOC:" + eDIService.createNewVoucher(po, inv, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER);
+						resp = "DOC:" + eDIService.createNewVoucher(po, inv, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER, false);
 					} else {
 						ForeingInvoice fi = new ForeingInvoice();
 						fi.setSerie(inv.getSerie());
 						fi.setFolio(inv.getFolio());
 						fi.setUuid(inv.getUuid());
 						fi.setExpeditionDate(inv.getFechaTimbrado());
-						resp = "DOC:" + eDIService.createNewForeignVoucher(po, fi, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER);
+						resp = "DOC:" + eDIService.createNewForeignVoucher(po, fi, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER, false);
 					}					
 				}
 
@@ -4021,7 +4021,7 @@ public JSONObject processExcelFile(FileUploadBean uploadItem) {
 					log4j.info("Se obtienen " + requestedReceiptList.size() + " recibos.");
 					
 					try {					
-						String resp = "DOC:" + eDIService.createNewForeignVoucher(po, fi, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER);
+						String resp = "DOC:" + eDIService.createNewForeignVoucher(po, fi, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER, false);
 						
 						//Enviar primer archivo adjunto a la factura foranea
 						try {

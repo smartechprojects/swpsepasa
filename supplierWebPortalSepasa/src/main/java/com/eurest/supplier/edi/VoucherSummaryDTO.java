@@ -23,6 +23,7 @@ public class VoucherSummaryDTO {
 	private double SWACR;
 	private double SWFAP;
 	private String SWEDBT;
+	private String SWURAB;
 	
 	
 	public String getSWEKCO() {
@@ -150,7 +151,12 @@ public class VoucherSummaryDTO {
 	}
 	public void setSWEDBT(String sWEDBT) {
 		SWEDBT = sWEDBT;
-	}	
-	
+	}
+	public String getSWURAB() {
+		return SWURAB;
+	}
+	public void setSWURAB(String sWURAB) {
+		SWURAB = sWURAB;
+	}
 
 }

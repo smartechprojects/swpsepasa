@@ -47,6 +47,7 @@ public class VoucherDetailDTO {
 	private double SZFAP;
 	private int SZDDJ;
 	private String SZEDBT;
+	private String SZURAB;
 	
 	public String getSZEDTY() {
 		return SZEDTY;
@@ -317,5 +318,11 @@ public class VoucherDetailDTO {
 	}
 	public void setSZEDBT(String sZEDBT) {
 		SZEDBT = sZEDBT;
+	}
+	public String getSZURAB() {
+		return SZURAB;
+	}
+	public void setSZURAB(String sZURAB) {
+		SZURAB = sZURAB;
 	}
 }
