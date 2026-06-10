@@ -408,14 +408,14 @@ public class OutSourcingService {
 						}
 
 						if(domesticCurrency.equals(invCurrency)) {
-							eDIService.createNewVoucher(po, inv, 0, s, receipts, AppConstants.NN_MODULE_VOUCHER, false);
+							eDIService.createNewVoucher(po, inv, 0, s, receipts, AppConstants.NN_MODULE_VOUCHER);
 						} else {
 							ForeingInvoice fi = new ForeingInvoice();
 							fi.setSerie(inv.getSerie());
 							fi.setFolio(inv.getFolio());
 							fi.setUuid(inv.getUuid());
 							fi.setExpeditionDate(inv.getFechaTimbrado());
-							eDIService.createNewForeignVoucher(po, fi, 0, s, receipts, AppConstants.NN_MODULE_VOUCHER, false);
+							eDIService.createNewForeignVoucher(po, fi, 0, s, receipts, AppConstants.NN_MODULE_VOUCHER);
 						}
 				        
 				        String emailRecipent = s.getEmailSupplier();

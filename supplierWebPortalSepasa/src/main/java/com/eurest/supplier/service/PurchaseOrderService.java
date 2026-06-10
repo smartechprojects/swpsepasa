@@ -1163,9 +1163,9 @@ public class PurchaseOrderService {
 						invDTO.setFolio(inv.getInvoiceNumber());
 						invDTO.setSerie("");
 						invDTO.setUuid(uuid);
-						resp = "DOC:" + eDIService.createNewVoucher(po, invDTO, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER, false);	
+						resp = "DOC:" + eDIService.createNewVoucher(po, invDTO, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER);	
 					} else {
-						resp = "DOC:" + eDIService.createNewForeignVoucher(po, inv, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER, false);
+						resp = "DOC:" + eDIService.createNewForeignVoucher(po, inv, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER);
 					}
 					
 					//Enviar primer archivo adjunto a la factura foranea
@@ -1529,9 +1529,9 @@ public class PurchaseOrderService {
 						invDTO.setFolio(inv.getInvoiceNumber());
 						invDTO.setSerie("");
 						invDTO.setUuid(uuid);
-						resp = "DOC:" + eDIService.createNewVoucher(po, invDTO, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER, false);	
+						resp = "DOC:" + eDIService.createNewVoucher(po, invDTO, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER);	
 					} else {
-						resp = "DOC:" + eDIService.createNewForeignVoucher(po, inv, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER, false);
+						resp = "DOC:" + eDIService.createNewForeignVoucher(po, inv, 0, s, requestedReceiptList, AppConstants.NN_MODULE_VOUCHER);
 					}
 					
 					//Enviar primer archivo adjunto a la factura foranea

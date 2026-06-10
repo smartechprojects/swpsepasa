@@ -38,7 +38,6 @@ public class VoucherHeaderDTO
 	private int SYDDU;
 	private int SYDDJ;
 	private String SYEDBT;
-	private String SYURAB;
 	
 	private List<VoucherDetailDTO> voucherDetailDTO;
 	private VoucherSummaryDTO voucherSummaryDTO;
@@ -252,11 +251,5 @@ public class VoucherHeaderDTO
 	}
 	public void setSYEDBT(String sYEDBT) {
 		SYEDBT = sYEDBT;
-	}
-	public String getSYURAB() {
-		return SYURAB;
-	}
-	public void setSYURAB(String sYURAB) {
-		SYURAB = sYURAB;
 	}	
 }

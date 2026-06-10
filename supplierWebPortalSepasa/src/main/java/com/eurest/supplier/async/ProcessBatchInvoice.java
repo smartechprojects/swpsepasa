@@ -448,14 +448,14 @@ public class ProcessBatchInvoice implements Runnable{
 				        //Registra en JDE
 						String resp = "";
 						if(domesticCurrency.equals(zElement.getInvoiceDTO().getMoneda())) {
-							resp = eDIService.createNewVoucher(po, zElement.getInvoiceDTO(), 0, s, currentReceiptList, AppConstants.NN_MODULE_INVBATCH, false);
+							resp = eDIService.createNewVoucher(po, zElement.getInvoiceDTO(), 0, s, currentReceiptList, AppConstants.NN_MODULE_INVBATCH);
 						} else {
 							ForeingInvoice fi = new ForeingInvoice();
 							fi.setSerie(zElement.getInvoiceDTO().getSerie());
 							fi.setFolio(zElement.getInvoiceDTO().getFolio());
 							fi.setUuid(zElement.getInvoiceDTO().getUuid());
 							fi.setExpeditionDate(zElement.getInvoiceDTO().getFechaTimbrado());
-							resp = eDIService.createNewForeignVoucher(po, fi, 0, s, currentReceiptList, AppConstants.NN_MODULE_INVBATCH, false);							
+							resp = eDIService.createNewForeignVoucher(po, fi, 0, s, currentReceiptList, AppConstants.NN_MODULE_INVBATCH);							
 						}
 						
 //						if(org.apache.commons.lang.StringUtils.isBlank(resp)) {
