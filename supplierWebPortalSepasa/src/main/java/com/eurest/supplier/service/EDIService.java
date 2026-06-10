@@ -1934,8 +1934,16 @@ private String getAlphaNumericString(int n) {
 		
 		//Cabecero con datos de la OC vacíos
 		recHdr.setSYURAB("6");
+		recHdr.setSYEKCO("");
 		recHdr.setSYDOCO(0);
 		recHdr.setSYDCTO("");
+		recHdr.setSYKCOO("");
+		recHdr.setSYSFXO("");
+		recHdr.setSYSHAN(0);
+		recHdr.setSYMCU("");
+		recHdr.setCRRM("");
+		recHdr.setSYCRCD("");
+		recHdr.setSYCRR(0);
 
 		//Detalle con URAB en 6
 		if(recHdr.getVoucherDetailDTO() != null && !recHdr.getVoucherDetailDTO().isEmpty()) {
@@ -1947,8 +1955,15 @@ private String getAlphaNumericString(int n) {
 		
 		//Summary con datos de la OC vacíos
 		recHdr.getVoucherSummaryDTO().setSWURAB("6");
+		recHdr.getVoucherSummaryDTO().setSWEKCO("");
+		recHdr.getVoucherSummaryDTO().setSWKCO("");
+		recHdr.getVoucherSummaryDTO().setSWKCOO("");
 		recHdr.getVoucherSummaryDTO().setSWDOCO(0);
 		recHdr.getVoucherSummaryDTO().setSWDCTO("");
+		recHdr.getVoucherSummaryDTO().setSWSFXO("");
+		recHdr.getVoucherSummaryDTO().setCRRM("");
+		recHdr.getVoucherSummaryDTO().setSWCRCD("");
+		recHdr.getVoucherSummaryDTO().setSWCRR(0);
 		
 	} catch (Exception e) {
 	}
