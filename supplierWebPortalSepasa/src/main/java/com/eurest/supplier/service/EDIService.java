@@ -497,7 +497,7 @@ public Supplier disable(Supplier s) {
     return true;
   }
   
-  public synchronized String createNewVoucher(PurchaseOrder o, InvoiceDTO inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType){		
+  public synchronized String createNewVoucher(PurchaseOrder o, InvoiceDTO inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType, boolean isMultiOrder){		
 		VoucherHeaderDTO recHdr = new VoucherHeaderDTO();
 		NextNumber nn = null;
 		int julianEPD = 0;
@@ -566,6 +566,10 @@ public Supplier disable(Supplier s) {
 		//Si el vinv tiene mas de 25 caracteres, se asignan los últimos 12 caracteres del UUID
 		if(vinv.length() > 25 && inv.getUuid() != null && inv.getUuid().length() >= 12) {
 			vinv = inv.getUuid().substring(inv.getUuid().length() - 12).replaceAll("[^a-zA-Z0-9]", "");
+		}
+		
+		if(isMultiOrder) {
+			vinv = vinv.concat("-").concat(String.valueOf(o.getOrderNumber())).concat("-").concat(o.getOrderType());
 		}
 		
 		log4j.info("****** Vinv:" + vinv);
@@ -673,7 +677,7 @@ public Supplier disable(Supplier s) {
 		return resp;
 	}
   
-  public synchronized String createNewVoucherWithoutReceipt(PurchaseOrder o, InvoiceDTO inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType){		
+  public synchronized String createNewVoucherWithoutReceipt(PurchaseOrder o, InvoiceDTO inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType, boolean isMultiOrder){		
 		VoucherHeaderDTO recHdr = new VoucherHeaderDTO();
 		NextNumber nn = null;
 		int julianEPD = 0;
@@ -742,6 +746,10 @@ public Supplier disable(Supplier s) {
 		//Si el vinv tiene mas de 25 caracteres, se asignan los últimos 12 caracteres del UUID
 		if(vinv.length() > 25 && inv.getUuid() != null && inv.getUuid().length() >= 12) {
 			vinv = inv.getUuid().substring(inv.getUuid().length() - 12).replaceAll("[^a-zA-Z0-9]", "");
+		}
+		
+		if(isMultiOrder) {
+			vinv = vinv.concat("-").concat(String.valueOf(o.getOrderNumber())).concat("-").concat(o.getOrderType());
 		}
 		
 		log4j.info("****** Vinv:" + vinv);
@@ -849,7 +857,7 @@ public Supplier disable(Supplier s) {
 		return resp;
 	}
   
-  public synchronized String createNewForeignVoucher(PurchaseOrder o, ForeingInvoice inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType){
+  public synchronized String createNewForeignVoucher(PurchaseOrder o, ForeingInvoice inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType, boolean isMultiOrder){
 		
 		VoucherHeaderDTO recHdr = new VoucherHeaderDTO();
 		NextNumber nn = null;
@@ -915,6 +923,10 @@ public Supplier disable(Supplier s) {
 		//Si el vinv tiene mas de 25 caracteres, se asignan los últimos 12 caracteres del UUID
 		if(vinv.length() > 25 && inv.getUuid() != null && inv.getUuid().length() >= 12) {
 			vinv = inv.getUuid().substring(inv.getUuid().length() - 12).replaceAll("[^a-zA-Z0-9]", "");
+		}
+		
+		if(isMultiOrder) {
+			vinv = vinv.concat("-").concat(String.valueOf(o.getOrderNumber())).concat("-").concat(o.getOrderType());
 		}
 		
 		log4j.info("****** Vinv:" + vinv);
@@ -1041,7 +1053,7 @@ public Supplier disable(Supplier s) {
 		return resp;
 	}
   
-  public synchronized String createNewForeignVoucherWithoutReceipt(PurchaseOrder o, ForeingInvoice inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType){
+  public synchronized String createNewForeignVoucherWithoutReceipt(PurchaseOrder o, ForeingInvoice inv, int nextNbr, Supplier s, List<Receipt> receipts, String nextNumberType, boolean isMultiOrder){
 		
 		VoucherHeaderDTO recHdr = new VoucherHeaderDTO();
 		NextNumber nn = null;
@@ -1107,6 +1119,10 @@ public Supplier disable(Supplier s) {
 		//Si el vinv tiene mas de 25 caracteres, se asignan los últimos 12 caracteres del UUID
 		if(vinv.length() > 25 && inv.getUuid() != null && inv.getUuid().length() >= 12) {
 			vinv = inv.getUuid().substring(inv.getUuid().length() - 12).replaceAll("[^a-zA-Z0-9]", "");
+		}
+		
+		if(isMultiOrder) {
+			vinv = vinv.concat("-").concat(String.valueOf(o.getOrderNumber())).concat("-").concat(o.getOrderType());
 		}
 		
 		log4j.info("****** Vinv:" + vinv);
@@ -1741,7 +1757,7 @@ public Supplier disable(Supplier s) {
       bj.setVoucherEntries(vtList);
       bj.setJournalEntries(jeList);
       this.jDERestService.sendJournalEntries(bj);
-      createNewVoucher(po, inv, nextNbr, s, null, AppConstants.NN_MODULE_VOUCHER);
+      createNewVoucher(po, inv, nextNbr, s, null, AppConstants.NN_MODULE_VOUCHER, false);
       nextNbr++;
       nn.setNexInt(nextNbr);
       this.nextNumberService.updateNextNumber(nn);
