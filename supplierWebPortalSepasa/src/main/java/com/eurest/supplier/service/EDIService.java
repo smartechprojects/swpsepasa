@@ -501,13 +501,24 @@ public Supplier disable(Supplier s) {
 		VoucherHeaderDTO recHdr = new VoucherHeaderDTO();
 		NextNumber nn = null;
 		int julianEPD = 0;
+		int nextNbrEdoc = 0;
 		
 		if(nextNbr == 0) {
 			nn = nextNumberService.getNextNumber(nextNumberType);
 			nextNbr = nn.getNexInt();
 			int nextNbrUpd = nextNbr + 1;
 			nn.setNexInt(nextNbrUpd);
-			nextNumberService.updateNextNumber(nn);	
+			nextNumberService.updateNextNumber(nn);
+		}
+		
+		if(isMultiOrder) {
+			nn = nextNumberService.getNextNumber(nextNumberType);
+			nextNbrEdoc = nn.getNexInt();
+			int nextNbrUpd = nextNbrEdoc + 1;
+			nn.setNexInt(nextNbrUpd);
+			nextNumberService.updateNextNumber(nn);			
+		} else {
+			nextNbrEdoc = nextNbr;
 		}
 		
 		if(AppConstants.NC_TC.equals(inv.getTipoComprobante())) {
@@ -520,7 +531,7 @@ public Supplier disable(Supplier s) {
 		
 		int julianDateTime = Integer.valueOf(JdeJavaJulianDateTools.Methods.getJDETimeStamp()).intValue();
 		
-		recHdr.setSYEDOC(nextNbr);
+		recHdr.setSYEDOC(nextNbrEdoc);
 		recHdr.setSYEDBT(nextNbr+"");
 		recHdr.setSYEKCO(o.getOrderCompany());
 		recHdr.setSYEDCT("PV");
@@ -602,7 +613,7 @@ public Supplier disable(Supplier s) {
 			if(d.getAmountReceived() != 0) {
 				
 				VoucherDetailDTO dto = new VoucherDetailDTO();
-				dto.setSZEDOC(nextNbr);
+				dto.setSZEDOC(nextNbrEdoc);
 				dto.setSZEDBT(nextNbr+"");
 				dto.setSZEDCT(o.getOrderType());
 				dto.setSZEKCO(o.getOrderCompany());
@@ -656,7 +667,7 @@ public Supplier disable(Supplier s) {
 		recHdr.setVoucherDetailDTO(dtlList);
 		VoucherSummaryDTO vs = new VoucherSummaryDTO();
 		vs.setSWEKCO(o.getOrderCompany());
-		vs.setSWEDOC(nextNbr);
+		vs.setSWEDOC(nextNbrEdoc);
 		vs.setSWEDBT(nextNbr+"");
 		vs.setSWKCO(o.getOrderCompany());
 		vs.setSWKCOO(o.getOrderCompany());
@@ -681,6 +692,7 @@ public Supplier disable(Supplier s) {
 		VoucherHeaderDTO recHdr = new VoucherHeaderDTO();
 		NextNumber nn = null;
 		int julianEPD = 0;
+		int nextNbrEdoc = 0;
 		
 		if(nextNbr == 0) {
 			nn = nextNumberService.getNextNumber(nextNumberType);
@@ -688,6 +700,16 @@ public Supplier disable(Supplier s) {
 			int nextNbrUpd = nextNbr + 1;
 			nn.setNexInt(nextNbrUpd);
 			nextNumberService.updateNextNumber(nn);	
+		}
+		
+		if(isMultiOrder) {
+			nn = nextNumberService.getNextNumber(nextNumberType);
+			nextNbrEdoc = nn.getNexInt();
+			int nextNbrUpd = nextNbrEdoc + 1;
+			nn.setNexInt(nextNbrUpd);
+			nextNumberService.updateNextNumber(nn);			
+		} else {
+			nextNbrEdoc = nextNbr;
 		}
 		
 		if(AppConstants.NC_TC.equals(inv.getTipoComprobante())) {
@@ -700,7 +722,7 @@ public Supplier disable(Supplier s) {
 		
 		int julianDateTime = Integer.valueOf(JdeJavaJulianDateTools.Methods.getJDETimeStamp()).intValue();
 		
-		recHdr.setSYEDOC(nextNbr);
+		recHdr.setSYEDOC(nextNbrEdoc);
 		recHdr.setSYEDBT(nextNbr+"");
 		recHdr.setSYEKCO(o.getOrderCompany());
 		recHdr.setSYEDCT("PV");
@@ -782,7 +804,7 @@ public Supplier disable(Supplier s) {
 			if(d.getAmount() != 0) {
 				
 				VoucherDetailDTO dto = new VoucherDetailDTO();
-				dto.setSZEDOC(nextNbr);
+				dto.setSZEDOC(nextNbrEdoc);
 				dto.setSZEDBT(nextNbr+"");
 				dto.setSZEDCT(o.getOrderType());
 				dto.setSZEKCO(o.getOrderCompany());
@@ -836,7 +858,7 @@ public Supplier disable(Supplier s) {
 		recHdr.setVoucherDetailDTO(dtlList);
 		VoucherSummaryDTO vs = new VoucherSummaryDTO();
 		vs.setSWEKCO(o.getOrderCompany());
-		vs.setSWEDOC(nextNbr);
+		vs.setSWEDOC(nextNbrEdoc);
 		vs.setSWEDBT(nextNbr+"");
 		vs.setSWKCO(o.getOrderCompany());
 		vs.setSWKCOO(o.getOrderCompany());
@@ -862,6 +884,7 @@ public Supplier disable(Supplier s) {
 		VoucherHeaderDTO recHdr = new VoucherHeaderDTO();
 		NextNumber nn = null;
 		int julianEPD = 0;
+		int nextNbrEdoc = 0;
 		
 		if(nextNbr == 0) {
 			nn = nextNumberService.getNextNumber(nextNumberType);
@@ -871,13 +894,23 @@ public Supplier disable(Supplier s) {
 			nextNumberService.updateNextNumber(nn);	
 		}
 		
+		if(isMultiOrder) {
+			nn = nextNumberService.getNextNumber(nextNumberType);
+			nextNbrEdoc = nn.getNexInt();
+			int nextNbrUpd = nextNbrEdoc + 1;
+			nn.setNexInt(nextNbrUpd);
+			nextNumberService.updateNextNumber(nn);			
+		} else {
+			nextNbrEdoc = nextNbr;
+		}
+		
 		if(o.getEstimatedPaymentDate() != null) {
 			julianEPD =Integer.valueOf(JdeJavaJulianDateTools.Methods.getJulianDate(o.getEstimatedPaymentDate()));
 		}
 		
 		int julianDateTime = Integer.valueOf(JdeJavaJulianDateTools.Methods.getJDETimeStamp()).intValue();
 		
-		recHdr.setSYEDOC(nextNbr);
+		recHdr.setSYEDOC(nextNbrEdoc);
 		recHdr.setSYEDBT(nextNbr+"");
 		recHdr.setSYEKCO(o.getOrderCompany());
 		recHdr.setSYEDCT("PV");
@@ -968,7 +1001,7 @@ public Supplier disable(Supplier s) {
 			if(d.getForeignAmountReceived() != 0) {
 				VoucherDetailDTO dto = new VoucherDetailDTO();
 	
-				dto.setSZEDOC(nextNbr);
+				dto.setSZEDOC(nextNbrEdoc);
 				dto.setSZEDBT(nextNbr+"");
 				dto.setSZEDCT(o.getOrderType());
 				dto.setSZEKCO(o.getOrderCompany());
@@ -1028,7 +1061,7 @@ public Supplier disable(Supplier s) {
 		
 		VoucherSummaryDTO vs = new VoucherSummaryDTO();
 		vs.setSWEKCO(o.getOrderCompany());
-		vs.setSWEDOC(nextNbr);
+		vs.setSWEDOC(nextNbrEdoc);
 		vs.setSWEDBT(nextNbr+"");
 		vs.setSWKCO(o.getOrderCompany());
 		vs.setSWKCOO(o.getOrderCompany());
@@ -1058,6 +1091,7 @@ public Supplier disable(Supplier s) {
 		VoucherHeaderDTO recHdr = new VoucherHeaderDTO();
 		NextNumber nn = null;
 		int julianEPD = 0;
+		int nextNbrEdoc = 0;
 		
 		if(nextNbr == 0) {
 			nn = nextNumberService.getNextNumber(nextNumberType);
@@ -1067,13 +1101,23 @@ public Supplier disable(Supplier s) {
 			nextNumberService.updateNextNumber(nn);	
 		}
 		
+		if(isMultiOrder) {
+			nn = nextNumberService.getNextNumber(nextNumberType);
+			nextNbrEdoc = nn.getNexInt();
+			int nextNbrUpd = nextNbrEdoc + 1;
+			nn.setNexInt(nextNbrUpd);
+			nextNumberService.updateNextNumber(nn);			
+		} else {
+			nextNbrEdoc = nextNbr;
+		}
+		
 		if(o.getEstimatedPaymentDate() != null) {
 			julianEPD =Integer.valueOf(JdeJavaJulianDateTools.Methods.getJulianDate(o.getEstimatedPaymentDate()));
 		}
 		
 		int julianDateTime = Integer.valueOf(JdeJavaJulianDateTools.Methods.getJDETimeStamp()).intValue();
 		
-		recHdr.setSYEDOC(nextNbr);
+		recHdr.setSYEDOC(nextNbrEdoc);
 		recHdr.setSYEDBT(nextNbr+"");
 		recHdr.setSYEKCO(o.getOrderCompany());
 		recHdr.setSYEDCT("PV");
@@ -1165,7 +1209,7 @@ public Supplier disable(Supplier s) {
 			if(d.getForeignAmount() != 0) {//OK
 				VoucherDetailDTO dto = new VoucherDetailDTO();
 	
-				dto.setSZEDOC(nextNbr);
+				dto.setSZEDOC(nextNbrEdoc);
 				dto.setSZEDBT(nextNbr+"");
 				dto.setSZEDCT(o.getOrderType());
 				dto.setSZEKCO(o.getOrderCompany());
@@ -1224,7 +1268,7 @@ public Supplier disable(Supplier s) {
 		
 		VoucherSummaryDTO vs = new VoucherSummaryDTO();
 		vs.setSWEKCO(o.getOrderCompany());
-		vs.setSWEDOC(nextNbr);
+		vs.setSWEDOC(nextNbrEdoc);
 		vs.setSWEDBT(nextNbr+"");
 		vs.setSWKCO(o.getOrderCompany());
 		vs.setSWKCOO(o.getOrderCompany());
