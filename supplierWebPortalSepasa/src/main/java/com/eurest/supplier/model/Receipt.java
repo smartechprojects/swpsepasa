@@ -70,6 +70,8 @@ public class Receipt implements Serializable {
 	private String remark;	
 	private String paymentStatus;
 	private Date paymentDate;
+	@Transient
+	private int paymentDateInt;//Julian Date
 	private String paymentReference;
 	private double paymentAmount;	
 	private String complPagoUuid;
@@ -281,6 +283,12 @@ public class Receipt implements Serializable {
 	}
 	public void setPaymentDate(Date paymentDate) {
 		this.paymentDate = paymentDate;
+	}
+	public int getPaymentDateInt() {
+		return paymentDateInt;
+	}
+	public void setPaymentDateInt(int paymentDateInt) {
+		this.paymentDateInt = paymentDateInt;
 	}
 	public String getPaymentReference() {
 		return paymentReference;

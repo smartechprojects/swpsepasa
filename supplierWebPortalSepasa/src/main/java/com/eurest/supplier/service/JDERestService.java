@@ -61,6 +61,7 @@ import com.eurest.supplier.model.UDC;
 import com.eurest.supplier.model.UserDocument;
 import com.eurest.supplier.model.Users;
 import com.eurest.supplier.util.AppConstants;
+import com.eurest.supplier.util.DatesUtils;
 import com.eurest.supplier.util.JdeJavaJulianDateTools;
 import com.eurest.supplier.util.LoggerJEdwars;
 import com.eurest.supplier.util.StringUtils;
@@ -205,8 +206,11 @@ public class JDERestService {
 	 	 	 					        List<PurchaseOrder> poUpdateList = new ArrayList<PurchaseOrder>();
 	 	 	 					     
 	 	 	 					        for(Receipt o : objList) {//Lista de Pagos de JDE
-		 	 	 							for(FiscalDocuments fd : fdList) {
-		 	 	 								
+	 	 	 								//Convierte Fecha Juliana
+	 	 	 								o.setPaymentDate(DatesUtils.convertJulianToJava(o.getPaymentDateInt()));
+	 	 	 								
+	 	 	 					        	for(FiscalDocuments fd : fdList) {
+	 	 	 					        		
 		 	 	 								String invNbr = "";
 		 	 	 								String folio = "";
 		 	 	 								if(fd.getFolio() != null && !"null".equals(fd.getFolio()) && !"NULL".equals(fd.getFolio()) ) {
