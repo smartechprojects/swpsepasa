@@ -151,7 +151,23 @@ public class JDERestService {
 								serie = fd.getSerie();
 							}
 							
+							//Si la factura no tiene folio, se asignan los últimos 12 caracteres del UUID
+							if("".equals(folio) && fd.getUuidFactura() != null && fd.getUuidFactura().length() >= 12) {
+								folio = fd.getUuidFactura().substring(fd.getUuidFactura().length() - 12).replaceAll("[^a-zA-Z0-9]", "");
+								serie = "";
+							}
+							
 							invNbr = serie + folio;
+							
+							//Si el vinv tiene mas de 25 caracteres, se asignan los últimos 12 caracteres del UUID
+							if(invNbr.length() > 25 && fd.getUuidFactura() != null && fd.getUuidFactura().length() >= 12) {
+								invNbr = fd.getUuidFactura().substring(fd.getUuidFactura().length() - 12).replaceAll("[^a-zA-Z0-9]", "");
+							}
+							
+							//if(fd.isMultiOrder()) {
+							//	invNbr = invNbr.concat("-").concat(String.valueOf(fd.getOrderNumber())).concat("-").concat(fd.getOrderType());
+							//}
+								
 							String tempUuid = String.format("%08d", fd.getOrderNumber()) + "_" + fd.getAddressNumber() + "_" + invNbr;
 							if(!uuidList.contains(tempUuid)) {
 								uuidList.add(tempUuid);
@@ -202,7 +218,22 @@ public class JDERestService {
 		 	 	 									serie = fd.getSerie();
 		 	 	 								}
 		 	 	 								
+		 	 	 								//Si la factura no tiene folio, se asignan los últimos 12 caracteres del UUID
+		 	 	 								if("".equals(folio) && fd.getUuidFactura() != null && fd.getUuidFactura().length() >= 12) {
+		 	 	 									folio = fd.getUuidFactura().substring(fd.getUuidFactura().length() - 12).replaceAll("[^a-zA-Z0-9]", "");
+		 	 	 									serie = "";
+		 	 	 								}
+		 	 	 								
 		 	 	 								invNbr = serie + folio;
+		 	 	 								
+		 	 	 								//Si el vinv tiene mas de 25 caracteres, se asignan los últimos 12 caracteres del UUID
+		 	 	 								if(invNbr.length() > 25 && fd.getUuidFactura() != null && fd.getUuidFactura().length() >= 12) {
+		 	 	 									invNbr = fd.getUuidFactura().substring(fd.getUuidFactura().length() - 12).replaceAll("[^a-zA-Z0-9]", "");
+		 	 	 								}
+		 	 	 								
+		 	 	 								//if(fd.isMultiOrder()) {
+		 	 	 								//	invNbr = invNbr.concat("-").concat(String.valueOf(o.getOrderNumber())).concat("-").concat(o.getOrderType());
+		 	 	 								//}
 		 	 	 								
 												if(o.getAddressNumber().equals(fd.getAddressNumber())
 														&& o.getOrderNumber() == fd.getOrderNumber()
@@ -265,7 +296,22 @@ public class JDERestService {
 		 	 	 									serie = o.getSerie();
 		 	 	 								}
 		 	 	 								
+		 	 	 								//Si la factura no tiene folio, se asignan los últimos 12 caracteres del UUID
+		 	 	 								if("".equals(folio) && o.getUuidFactura() != null && o.getUuidFactura().length() >= 12) {
+		 	 	 									folio = o.getUuidFactura().substring(o.getUuidFactura().length() - 12).replaceAll("[^a-zA-Z0-9]", "");
+		 	 	 									serie = "";
+		 	 	 								}
+		 	 	 								
 		 	 	 								invNbr = serie + folio;
+		 	 	 								
+		 	 	 								//Si el vinv tiene mas de 25 caracteres, se asignan los últimos 12 caracteres del UUID
+		 	 	 								if(invNbr.length() > 25 && o.getUuidFactura() != null && o.getUuidFactura().length() >= 12) {
+		 	 	 									invNbr = o.getUuidFactura().substring(o.getUuidFactura().length() - 12).replaceAll("[^a-zA-Z0-9]", "");
+		 	 	 								}
+		 	 	 								
+		 	 	 								//if(o.isMultiOrder()) {
+		 	 	 								//	invNbr = invNbr.concat("-").concat(String.valueOf(o.getOrderNumber())).concat("-").concat(o.getOrderType());
+		 	 	 								//}
 		 	 	 								
 			 	 								String emailRecipient = (s.getEmailSupplier());
 			 	 	 							EmailServiceAsync emailAsyncSup = new EmailServiceAsync();
